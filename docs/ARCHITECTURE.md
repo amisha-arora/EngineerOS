@@ -4,4 +4,4 @@
 
 The following diagram illustrates the high-level architecture of EngineerOS and how its major components interact.
 
-![EngineerOS High-Level Architecture](../diagrams/EngineerOS-High-Level-Architecture.png)
+![EngineerOS High-Level Architecture](diagrams/EngineerOS-High-Level-Architecture.drawio.png)
