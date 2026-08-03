@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EngineerOS.Api/EngineerOS.Api.csproj" />
+    <Project Path="src/EngineerOS.Application/EngineerOS.Application.csproj" />
+    <Project Path="src/EngineerOS.Domain/EngineerOS.Domain.csproj" />
+    <Project Path="src/EngineerOS.Infrastructure/EngineerOS.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EngineerOS.IntegrationTests/EngineerOS.IntegrationTests.csproj" />
+    <Project Path="tests/EngineerOS.UnitTests/EngineerOS.UnitTests.csproj" />
+  </Folder>
+</Solution>
