@@ -21,3 +21,13 @@ obj/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Environment files
+.env
+.env.*
+
+# ASP.NET User Secrets (stored outside project, but kept for clarity)
+secrets.json
+
+# EF Core generated SQL (if you ever create any)
+*.sql
