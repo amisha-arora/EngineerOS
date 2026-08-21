@@ -2,7 +2,8 @@ namespace EngineerOS.Domain.Entities;
 
 public sealed class User
 {
-    private readonly List<RefreshToken> _refreshTokens = [];
+    private readonly List<RefreshToken> _refreshTokens = new();
+    private readonly List<Repository> _repositories = [];
 
     private User()
     {
@@ -36,4 +37,7 @@ public sealed class User
 
     public IReadOnlyCollection<RefreshToken> RefreshTokens =>
         _refreshTokens.AsReadOnly();
+
+    public IReadOnlyCollection<Repository> Repositories =>
+    _repositories.AsReadOnly();
 }

@@ -15,6 +15,12 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens =>
         Set<RefreshToken>();
 
+    public DbSet<Repository> Repositories =>
+    Set<Repository>();
+
+    public DbSet<RepositoryAnalysis> RepositoryAnalyses =>
+        Set<RepositoryAnalysis>();
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {
