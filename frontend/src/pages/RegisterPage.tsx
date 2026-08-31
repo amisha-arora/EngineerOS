@@ -1,9 +1,12 @@
-// src/pages/RegisterPage.tsx
 
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 import AuthLayout from "../components/auth/AuthLayout";
 import GoogleButton from "../components/auth/GoogleButton";
+
+import { registerUser } from "../api/authApi";
+
 import "../styles/auth.css";
 
 type RegisterErrors = {
@@ -31,8 +34,10 @@ export default function RegisterPage() {
     const [errors, setErrors] =
         useState<RegisterErrors>({});
 
-    const [successMessage, setSuccessMessage] =
+    const [apiError, setApiError] =
         useState("");
+
+    const navigate = useNavigate();
 
     const validate = () => {
         const newErrors: RegisterErrors = {};
@@ -85,7 +90,7 @@ export default function RegisterPage() {
     ) => {
         event.preventDefault();
 
-        setSuccessMessage("");
+        setApiError("");
 
         if (!validate()) {
             return;
@@ -93,23 +98,32 @@ export default function RegisterPage() {
 
         setIsLoading(true);
 
-        // Mock API delay for Day 2.
-        await new Promise((resolve) =>
-            setTimeout(resolve, 1200)
-        );
+        try {
+            await registerUser({
+                firstName,
+                lastName,
+                email,
+                password,
+            });
 
-        console.log("Mock registration", {
-            firstName,
-            lastName,
-            email,
-            password,
-        });
-
-        setIsLoading(false);
-
-        setSuccessMessage(
-            "Account form submitted successfully."
-        );
+            navigate(
+                "/login",
+                {
+                    replace: true,
+                    state: {
+                        registered: true,
+                    },
+                }
+            );
+        } catch (error) {
+            setApiError(
+                error instanceof Error
+                    ? error.message
+                    : "Unable to create account."
+            );
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -155,6 +169,10 @@ export default function RegisterPage() {
                                             firstName: undefined,
                                         }));
                                     }
+
+                                    if (apiError) {
+                                        setApiError("");
+                                    }
                                 }}
                             />
 
@@ -191,6 +209,10 @@ export default function RegisterPage() {
                                             lastName: undefined,
                                         }));
                                     }
+
+                                    if (apiError) {
+                                        setApiError("");
+                                    }
                                 }}
                             />
 
@@ -213,16 +235,24 @@ export default function RegisterPage() {
                             placeholder="you@example.com"
                             value={email}
                             className={
-                                errors.email ? "input-error" : ""
+                                errors.email
+                                    ? "input-error"
+                                    : ""
                             }
                             onChange={(event) => {
-                                setEmail(event.target.value);
+                                setEmail(
+                                    event.target.value
+                                );
 
                                 if (errors.email) {
                                     setErrors((current) => ({
                                         ...current,
                                         email: undefined,
                                     }));
+                                }
+
+                                if (apiError) {
+                                    setApiError("");
                                 }
                             }}
                         />
@@ -265,6 +295,10 @@ export default function RegisterPage() {
                                             password: undefined,
                                         }));
                                     }
+
+                                    if (apiError) {
+                                        setApiError("");
+                                    }
                                 }}
                             />
 
@@ -277,7 +311,9 @@ export default function RegisterPage() {
                                     )
                                 }
                             >
-                                {showPassword ? "Hide" : "Show"}
+                                {showPassword
+                                    ? "Hide"
+                                    : "Show"}
                             </button>
                         </div>
 
@@ -321,8 +357,13 @@ export default function RegisterPage() {
                                 ) {
                                     setErrors((current) => ({
                                         ...current,
-                                        confirmPassword: undefined,
+                                        confirmPassword:
+                                            undefined,
                                     }));
+                                }
+
+                                if (apiError) {
+                                    setApiError("");
                                 }
                             }}
                         />
@@ -334,9 +375,9 @@ export default function RegisterPage() {
                         )}
                     </div>
 
-                    {successMessage && (
-                        <div className="success-message">
-                            {successMessage}
+                    {apiError && (
+                        <div className="api-error">
+                            {apiError}
                         </div>
                     )}
 

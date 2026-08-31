@@ -5,6 +5,10 @@ using EngineerOS.Application.Features.Authentication.Logout;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using EngineerOS.Application.Features.Users.GetCurrentUser;
+using EngineerOS.Application.Features.Repositories.Create;
+using EngineerOS.Application.Features.Repositories.Delete;
+using EngineerOS.Application.Features.Repositories.GetAll;
+using EngineerOS.Application.Features.Repositories.GetById;
 
 namespace EngineerOS.Application;
 
@@ -21,6 +25,10 @@ public static class DependencyInjection
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<LogoutService>();
         services.AddScoped<GetCurrentUserService>();
+        services.AddScoped<CreateRepositoryService>();
+        services.AddScoped<GetRepositoriesService>();
+        services.AddScoped<GetRepositoryByIdService>();
+        services.AddScoped<DeleteRepositoryService>();
 
         return services;
     }

@@ -1,10 +1,10 @@
-// using EngineerOS.Application.Abstractions.Persistence; // avoid direct dependency on the interface here to compile reliably
+using EngineerOS.Application.Abstractions.Persistence; 
 using EngineerOS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EngineerOS.Infrastructure.Persistence.Repositories;
 
-public sealed class RepositoryRepository
+public sealed class RepositoryRepository : IRepositoryRepository
 {
     private readonly ApplicationDbContext _dbContext;
 

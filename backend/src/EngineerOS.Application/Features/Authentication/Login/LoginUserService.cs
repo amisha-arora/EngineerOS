@@ -3,6 +3,7 @@ using EngineerOS.Application.Abstractions.Persistence;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using EngineerOS.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace EngineerOS.Application.Features.Authentication.Login;
 
@@ -15,6 +16,7 @@ public sealed class LoginUserService
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<LoginUserService> _logger;
 
     public LoginUserService(
         IUserRepository userRepository,
@@ -23,7 +25,8 @@ public sealed class LoginUserService
         IValidator<LoginUserRequest> validator,
         IRefreshTokenGenerator refreshTokenGenerator,
         IRefreshTokenRepository refreshTokenRepository,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ILogger<LoginUserService> logger)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
@@ -32,6 +35,8 @@ public sealed class LoginUserService
         _refreshTokenGenerator = refreshTokenGenerator;
         _refreshTokenRepository = refreshTokenRepository;
         _configuration = configuration;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
     }
 
     public async Task<LoginUserResponse> LoginAsync(
@@ -73,6 +78,13 @@ public sealed class LoginUserService
             throw new UnauthorizedAccessException(
                 "Invalid email or password.");
         }
+
+        _logger.LogInformation(
+            "Login attempt for email {Email}",
+            request.Email);
+        _logger.LogInformation(
+            "User {UserId} logged in successfully",
+            user.Id);
 
         var accessToken =
             _jwtTokenGenerator.GenerateAccessToken(user);

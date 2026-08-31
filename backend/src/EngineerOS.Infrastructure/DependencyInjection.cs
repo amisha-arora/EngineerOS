@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
         // Register repository implementation. The interface is defined in Application.Abstractions
         services.AddScoped<RepositoryRepository>();
+        services.AddScoped<IRepositoryRepository,RepositoryRepository>();
 
 
         return services;

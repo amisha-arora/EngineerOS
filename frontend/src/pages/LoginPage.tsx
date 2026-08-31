@@ -1,9 +1,13 @@
 // src/pages/LoginPage.tsx
 
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 import AuthLayout from "../components/auth/AuthLayout";
 import GoogleButton from "../components/auth/GoogleButton";
+
+import { useAuth } from "../features/auth/AuthContext";
+
 import "../styles/auth.css";
 
 type LoginErrors = {
@@ -15,24 +19,41 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [errors, setErrors] = useState<LoginErrors>({});
-    const [successMessage, setSuccessMessage] = useState("");
+    const [showPassword, setShowPassword] =
+        useState(false);
+
+    const [isLoading, setIsLoading] =
+        useState(false);
+
+    const [errors, setErrors] =
+        useState<LoginErrors>({});
+
+    const [apiError, setApiError] =
+        useState("");
+
+    const navigate = useNavigate();
+
+    const { login } = useAuth();
 
     const validate = () => {
         const newErrors: LoginErrors = {};
 
         if (!email.trim()) {
-            newErrors.email = "Email is required.";
-        } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-            newErrors.email = "Enter a valid email address.";
+            newErrors.email =
+                "Email is required.";
+        } else if (
+            !/^\S+@\S+\.\S+$/.test(email)
+        ) {
+            newErrors.email =
+                "Enter a valid email address.";
         }
 
         if (!password) {
-            newErrors.password = "Password is required.";
+            newErrors.password =
+                "Password is required.";
         } else if (password.length < 8) {
-            newErrors.password = "Password must contain at least 8 characters.";
+            newErrors.password =
+                "Password must contain at least 8 characters.";
         }
 
         setErrors(newErrors);
@@ -45,7 +66,7 @@ export default function LoginPage() {
     ) => {
         event.preventDefault();
 
-        setSuccessMessage("");
+        setApiError("");
 
         if (!validate()) {
             return;
@@ -53,31 +74,40 @@ export default function LoginPage() {
 
         setIsLoading(true);
 
-        // Mock API delay for Day 2.
-        await new Promise((resolve) =>
-            setTimeout(resolve, 1200)
-        );
+        try {
+            await login({
+                email,
+                password,
+            });
 
-        console.log("Mock login", {
-            email,
-            password,
-        });
-
-        setIsLoading(false);
-
-        setSuccessMessage(
-            "Login form submitted successfully."
-        );
+            navigate(
+                "/dashboard",
+                {
+                    replace: true,
+                }
+            );
+        } catch (error) {
+            setApiError(
+                error instanceof Error
+                    ? error.message
+                    : "Unable to sign in."
+            );
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
         <AuthLayout>
             <div className="auth-content">
                 <div className="auth-heading">
-                    <h1>Sign in to EngineerOS</h1>
+                    <h1>
+                        Sign in to EngineerOS
+                    </h1>
 
                     <p>
-                        Continue to your engineering workspace.
+                        Continue to your engineering
+                        workspace.
                     </p>
                 </div>
 
@@ -97,16 +127,26 @@ export default function LoginPage() {
                             placeholder="you@example.com"
                             value={email}
                             className={
-                                errors.email ? "input-error" : ""
+                                errors.email
+                                    ? "input-error"
+                                    : ""
                             }
                             onChange={(event) => {
-                                setEmail(event.target.value);
+                                setEmail(
+                                    event.target.value
+                                );
 
                                 if (errors.email) {
-                                    setErrors((current) => ({
-                                        ...current,
-                                        email: undefined,
-                                    }));
+                                    setErrors(
+                                        (current) => ({
+                                            ...current,
+                                            email: undefined,
+                                        })
+                                    );
+                                }
+
+                                if (apiError) {
+                                    setApiError("");
                                 }
                             }}
                         />
@@ -153,13 +193,24 @@ export default function LoginPage() {
                                         : ""
                                 }
                                 onChange={(event) => {
-                                    setPassword(event.target.value);
+                                    setPassword(
+                                        event.target.value
+                                    );
 
-                                    if (errors.password) {
-                                        setErrors((current) => ({
-                                            ...current,
-                                            password: undefined,
-                                        }));
+                                    if (
+                                        errors.password
+                                    ) {
+                                        setErrors(
+                                            (current) => ({
+                                                ...current,
+                                                password:
+                                                    undefined,
+                                            })
+                                        );
+                                    }
+
+                                    if (apiError) {
+                                        setApiError("");
                                     }
                                 }}
                             />
@@ -169,11 +220,14 @@ export default function LoginPage() {
                                 className="password-toggle"
                                 onClick={() =>
                                     setShowPassword(
-                                        (current) => !current
+                                        (current) =>
+                                            !current
                                     )
                                 }
                             >
-                                {showPassword ? "Hide" : "Show"}
+                                {showPassword
+                                    ? "Hide"
+                                    : "Show"}
                             </button>
                         </div>
 
@@ -184,9 +238,9 @@ export default function LoginPage() {
                         )}
                     </div>
 
-                    {successMessage && (
-                        <div className="success-message">
-                            {successMessage}
+                    {apiError && (
+                        <div className="api-error">
+                            {apiError}
                         </div>
                     )}
 
