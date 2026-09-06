@@ -1,7 +1,6 @@
 import { apiRequest } from "./apiClient";
 
 import type {
-    CurrentUser,
     LoginRequest,
     LoginResponse,
     RegisterRequest,
@@ -10,7 +9,7 @@ import type {
 export function registerUser(
     request: RegisterRequest
 ) {
-    return apiRequest(
+    return apiRequest<void>(
         "/api/v1/auth/register",
         {
             method: "POST",
@@ -27,16 +26,6 @@ export function loginUser(
         {
             method: "POST",
             body: JSON.stringify(request),
-        }
-    );
-}
-
-export function getCurrentUser() {
-    return apiRequest<CurrentUser>(
-        "/api/v1/users/me",
-        {
-            method: "GET",
-            authenticated: true,
         }
     );
 }

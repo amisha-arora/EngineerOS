@@ -1,11 +1,27 @@
+import {
+    useState,
+    type FormEvent,
+} from "react";
 
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {
+    Link,
+    useNavigate,
+} from "react-router-dom";
 
 import AuthLayout from "../components/auth/AuthLayout";
 import GoogleButton from "../components/auth/GoogleButton";
 
-import { registerUser } from "../api/authApi";
+import Button from "../components/common/Button";
+import Input from "../components/common/Input";
+import ErrorMessage from "../components/common/ErrorMessage";
+
+import {
+    registerUser,
+} from "../api/authApi";
+
+import {
+    useAuth,
+} from "../features/auth/AuthContext";
 
 import "../styles/auth.css";
 
@@ -18,28 +34,76 @@ type RegisterErrors = {
 };
 
 export default function RegisterPage() {
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] =
-        useState("");
-
-    const [showPassword, setShowPassword] =
-        useState(false);
-
-    const [isLoading, setIsLoading] =
-        useState(false);
-
-    const [errors, setErrors] =
-        useState<RegisterErrors>({});
-
-    const [apiError, setApiError] =
-        useState("");
-
     const navigate = useNavigate();
 
-    const validate = () => {
+    const { login } = useAuth();
+
+    const [
+        firstName,
+        setFirstName,
+    ] = useState("");
+
+    const [
+        lastName,
+        setLastName,
+    ] = useState("");
+
+    const [
+        email,
+        setEmail,
+    ] = useState("");
+
+    const [
+        password,
+        setPassword,
+    ] = useState("");
+
+    const [
+        confirmPassword,
+        setConfirmPassword,
+    ] = useState("");
+
+    const [
+        showPassword,
+        setShowPassword,
+    ] = useState(false);
+
+    const [
+        showConfirmPassword,
+        setShowConfirmPassword,
+    ] = useState(false);
+
+    const [
+        errors,
+        setErrors,
+    ] = useState<RegisterErrors>({});
+
+    const [
+        apiError,
+        setApiError,
+    ] = useState("");
+
+    const [
+        isLoading,
+        setIsLoading,
+    ] = useState(false);
+
+    const clearFieldError = (
+        field: keyof RegisterErrors
+    ) => {
+        setErrors(
+            (current) => ({
+                ...current,
+                [field]: undefined,
+            })
+        );
+
+        if (apiError) {
+            setApiError("");
+        }
+    };
+
+    const validateForm = () => {
         const newErrors: RegisterErrors = {};
 
         if (!firstName.trim()) {
@@ -56,7 +120,9 @@ export default function RegisterPage() {
             newErrors.email =
                 "Email is required.";
         } else if (
-            !/^\S+@\S+\.\S+$/.test(email)
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                email
+            )
         ) {
             newErrors.email =
                 "Enter a valid email address.";
@@ -65,14 +131,16 @@ export default function RegisterPage() {
         if (!password) {
             newErrors.password =
                 "Password is required.";
-        } else if (password.length < 8) {
+        } else if (
+            password.length < 8
+        ) {
             newErrors.password =
-                "Use at least 8 characters.";
+                "Password must be at least 8 characters.";
         }
 
         if (!confirmPassword) {
             newErrors.confirmPassword =
-                "Confirm your password.";
+                "Please confirm your password.";
         } else if (
             password !== confirmPassword
         ) {
@@ -82,7 +150,9 @@ export default function RegisterPage() {
 
         setErrors(newErrors);
 
-        return Object.keys(newErrors).length === 0;
+        return (
+            Object.keys(newErrors).length === 0
+        );
     };
 
     const handleSubmit = async (
@@ -92,7 +162,7 @@ export default function RegisterPage() {
 
         setApiError("");
 
-        if (!validate()) {
+        if (!validateForm()) {
             return;
         }
 
@@ -100,19 +170,24 @@ export default function RegisterPage() {
 
         try {
             await registerUser({
-                firstName,
-                lastName,
-                email,
+                firstName:
+                    firstName.trim(),
+                lastName:
+                    lastName.trim(),
+                email:
+                    email.trim(),
+                password,
+            });
+
+            await login({
+                email: email.trim(),
                 password,
             });
 
             navigate(
-                "/login",
+                "/dashboard",
                 {
                     replace: true,
-                    state: {
-                        registered: true,
-                    },
                 }
             );
         } catch (error) {
@@ -128,283 +203,212 @@ export default function RegisterPage() {
 
     return (
         <AuthLayout>
-            <div className="auth-content register-content">
-                <div className="auth-heading">
-                    <h1>Create your account</h1>
 
-                    <p>
-                        Get started with EngineerOS.
-                    </p>
+            <div className="auth-heading">
+                <h1>
+                    Create your account
+                </h1>
+
+                <p>
+                    Start building your EngineerOS workspace.
+                </p>
+            </div>
+
+            <form
+                className="auth-form"
+                onSubmit={handleSubmit}
+            >
+
+                <div className="name-fields">
+
+                    <Input
+                        id="firstName"
+                        type="text"
+                        label="First name"
+                        placeholder="First name"
+                        autoComplete="given-name"
+                        value={firstName}
+                        error={errors.firstName}
+                        onChange={(event) => {
+                            setFirstName(
+                                event.target.value
+                            );
+
+                            clearFieldError(
+                                "firstName"
+                            );
+                        }}
+                    />
+
+                    <Input
+                        id="lastName"
+                        type="text"
+                        label="Last name"
+                        placeholder="Last name"
+                        autoComplete="family-name"
+                        value={lastName}
+                        error={errors.lastName}
+                        onChange={(event) => {
+                            setLastName(
+                                event.target.value
+                            );
+
+                            clearFieldError(
+                                "lastName"
+                            );
+                        }}
+                    />
+
                 </div>
 
-                <form
-                    className="auth-form"
-                    onSubmit={handleSubmit}
-                    noValidate
-                >
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label htmlFor="firstName">
-                                First name
-                            </label>
+                <Input
+                    id="email"
+                    type="email"
+                    label="Email address"
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    value={email}
+                    error={errors.email}
+                    onChange={(event) => {
+                        setEmail(
+                            event.target.value
+                        );
 
-                            <input
-                                id="firstName"
-                                type="text"
-                                placeholder="First name"
-                                value={firstName}
-                                className={
-                                    errors.firstName
-                                        ? "input-error"
-                                        : ""
-                                }
-                                onChange={(event) => {
-                                    setFirstName(
-                                        event.target.value
-                                    );
+                        clearFieldError(
+                            "email"
+                        );
+                    }}
+                />
 
-                                    if (errors.firstName) {
-                                        setErrors((current) => ({
-                                            ...current,
-                                            firstName: undefined,
-                                        }));
-                                    }
+                <div className="form-group">
 
-                                    if (apiError) {
-                                        setApiError("");
-                                    }
-                                }}
-                            />
+                    <label htmlFor="password">
+                        Password
+                    </label>
 
-                            {errors.firstName && (
-                                <span className="field-error">
-                                    {errors.firstName}
-                                </span>
-                            )}
-                        </div>
+                    <div className="password-wrapper">
 
-                        <div className="form-group">
-                            <label htmlFor="lastName">
-                                Last name
-                            </label>
-
-                            <input
-                                id="lastName"
-                                type="text"
-                                placeholder="Last name"
-                                value={lastName}
-                                className={
-                                    errors.lastName
-                                        ? "input-error"
-                                        : ""
-                                }
-                                onChange={(event) => {
-                                    setLastName(
-                                        event.target.value
-                                    );
-
-                                    if (errors.lastName) {
-                                        setErrors((current) => ({
-                                            ...current,
-                                            lastName: undefined,
-                                        }));
-                                    }
-
-                                    if (apiError) {
-                                        setApiError("");
-                                    }
-                                }}
-                            />
-
-                            {errors.lastName && (
-                                <span className="field-error">
-                                    {errors.lastName}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="registerEmail">
-                            Email address
-                        </label>
-
-                        <input
-                            id="registerEmail"
-                            type="email"
-                            placeholder="you@example.com"
-                            value={email}
-                            className={
-                                errors.email
-                                    ? "input-error"
-                                    : ""
-                            }
-                            onChange={(event) => {
-                                setEmail(
-                                    event.target.value
-                                );
-
-                                if (errors.email) {
-                                    setErrors((current) => ({
-                                        ...current,
-                                        email: undefined,
-                                    }));
-                                }
-
-                                if (apiError) {
-                                    setApiError("");
-                                }
-                            }}
-                        />
-
-                        {errors.email && (
-                            <span className="field-error">
-                                {errors.email}
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="registerPassword">
-                            Password
-                        </label>
-
-                        <div className="password-wrapper">
-                            <input
-                                id="registerPassword"
-                                type={
-                                    showPassword
-                                        ? "text"
-                                        : "password"
-                                }
-                                placeholder="Create a password"
-                                value={password}
-                                className={
-                                    errors.password
-                                        ? "input-error"
-                                        : ""
-                                }
-                                onChange={(event) => {
-                                    setPassword(
-                                        event.target.value
-                                    );
-
-                                    if (errors.password) {
-                                        setErrors((current) => ({
-                                            ...current,
-                                            password: undefined,
-                                        }));
-                                    }
-
-                                    if (apiError) {
-                                        setApiError("");
-                                    }
-                                }}
-                            />
-
-                            <button
-                                type="button"
-                                className="password-toggle"
-                                onClick={() =>
-                                    setShowPassword(
-                                        (current) => !current
-                                    )
-                                }
-                            >
-                                {showPassword
-                                    ? "Hide"
-                                    : "Show"}
-                            </button>
-                        </div>
-
-                        <span className="field-hint">
-                            Minimum 8 characters.
-                        </span>
-
-                        {errors.password && (
-                            <span className="field-error">
-                                {errors.password}
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="confirmPassword">
-                            Confirm password
-                        </label>
-
-                        <input
-                            id="confirmPassword"
+                        <Input
+                            id="password"
                             type={
                                 showPassword
                                     ? "text"
                                     : "password"
                             }
-                            placeholder="Repeat your password"
+                            placeholder="Create a password"
+                            autoComplete="new-password"
+                            value={password}
+                            error={errors.password}
+                            onChange={(event) => {
+                                setPassword(
+                                    event.target.value
+                                );
+
+                                clearFieldError(
+                                    "password"
+                                );
+                            }}
+                        />
+
+                        <button
+                            type="button"
+                            className="password-toggle"
+                            onClick={() =>
+                                setShowPassword(
+                                    (current) =>
+                                        !current
+                                )
+                            }
+                        >
+                            {showPassword
+                                ? "Hide"
+                                : "Show"}
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div className="form-group">
+
+                    <label htmlFor="confirmPassword">
+                        Confirm password
+                    </label>
+
+                    <div className="password-wrapper">
+
+                        <Input
+                            id="confirmPassword"
+                            type={
+                                showConfirmPassword
+                                    ? "text"
+                                    : "password"
+                            }
+                            placeholder="Enter password again"
+                            autoComplete="new-password"
                             value={confirmPassword}
-                            className={
+                            error={
                                 errors.confirmPassword
-                                    ? "input-error"
-                                    : ""
                             }
                             onChange={(event) => {
                                 setConfirmPassword(
                                     event.target.value
                                 );
 
-                                if (
-                                    errors.confirmPassword
-                                ) {
-                                    setErrors((current) => ({
-                                        ...current,
-                                        confirmPassword:
-                                            undefined,
-                                    }));
-                                }
-
-                                if (apiError) {
-                                    setApiError("");
-                                }
+                                clearFieldError(
+                                    "confirmPassword"
+                                );
                             }}
                         />
 
-                        {errors.confirmPassword && (
-                            <span className="field-error">
-                                {errors.confirmPassword}
-                            </span>
-                        )}
+                        <button
+                            type="button"
+                            className="password-toggle"
+                            onClick={() =>
+                                setShowConfirmPassword(
+                                    (current) =>
+                                        !current
+                                )
+                            }
+                        >
+                            {showConfirmPassword
+                                ? "Hide"
+                                : "Show"}
+                        </button>
+
                     </div>
 
-                    {apiError && (
-                        <div className="api-error">
-                            {apiError}
-                        </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        className="primary-button"
-                        disabled={isLoading}
-                    >
-                        {isLoading
-                            ? "Creating account..."
-                            : "Create account"}
-                    </button>
-                </form>
-
-                <div className="auth-divider">
-                    <span>OR</span>
                 </div>
 
-                <GoogleButton text="Continue with Google" />
+                <ErrorMessage
+                    message={apiError}
+                />
 
-                <p className="auth-switch">
-                    Already have an account?{" "}
-                    <Link to="/login">
-                        Sign in
-                    </Link>
-                </p>
+                <Button
+                    type="submit"
+                    isLoading={isLoading}
+                    className="primary-button"
+                >
+                    Create account
+                </Button>
+
+            </form>
+
+            <div className="auth-divider">
+                <span>OR</span>
             </div>
+
+            <GoogleButton
+                text="Sign up with Google"
+            />
+
+            <p className="auth-switch-text">
+                Already have an account?{" "}
+                <Link to="/login">
+                    Sign in
+                </Link>
+            </p>
+
         </AuthLayout>
     );
 }

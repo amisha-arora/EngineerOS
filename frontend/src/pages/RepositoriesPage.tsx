@@ -1,4 +1,4 @@
-// src/pages/RepositoriesPage.tsx
+import { useNavigate } from "react-router-dom";
 
 import {
     useEffect,
@@ -10,6 +10,11 @@ import AppLayout from "../layouts/AppLayout";
 import RepositoryCard from "../components/repositories/RepositoryCard";
 import RepositoryEmptyState from "../components/repositories/RepositoryEmptyState";
 
+import Button from "../components/common/Button";
+import PageHeader from "../components/common/PageHeader";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import ErrorMessage from "../components/common/ErrorMessage";
+
 import {
     deleteRepository,
     getRepositories,
@@ -20,6 +25,7 @@ import type { RepositoryListItem } from "../types/repository";
 import "../styles/repositories.css";
 
 export default function RepositoriesPage() {
+    const navigate = useNavigate();
     const [
         repositories,
         setRepositories,
@@ -88,41 +94,31 @@ export default function RepositoriesPage() {
             );
         }
     };
-
     return (
         <AppLayout>
             <div className="repositories-page">
 
-                <div className="repositories-header">
+                <PageHeader
+                    title="Repositories"
+                    description="Browse and manage the repositories in your workspace."
+                    action={
+                        <Button
+                            type="button"
+                            onClick={() =>
+                                navigate("/repositories/upload")
+                            }
+                        >
+                            Upload Repository
+                        </Button>
+                    }
+                />
 
-                    <div>
-                        <h1>Repositories</h1>
-
-                        <p>
-                            Browse and manage the
-                            repositories in your workspace.
-                        </p>
-                    </div>
-
-                    <button
-                        type="button"
-                        className="repository-primary-button"
-                    >
-                        Upload Repository
-                    </button>
-
-                </div>
-
-                {error && (
-                    <div className="repository-error">
-                        {error}
-                    </div>
-                )}
+                <ErrorMessage message={error} />
 
                 {isLoading ? (
-                    <div className="repository-loading">
-                        Loading repositories...
-                    </div>
+                    <LoadingSpinner
+                        message="Loading repositories..."
+                    />
                 ) : repositories.length === 0 ? (
                     <RepositoryEmptyState />
                 ) : (
@@ -141,5 +137,6 @@ export default function RepositoriesPage() {
 
             </div>
         </AppLayout>
+
     );
 }

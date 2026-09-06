@@ -6,6 +6,11 @@ import type {
     RepositoryListItem,
 } from "../types/repository";
 
+export type CreateRepositoryRequest = {
+    name: string;
+    url: string;
+};
+
 export function getRepositories() {
     return apiRequest<RepositoryListItem[]>(
         "/api/v1/repositories",
@@ -24,6 +29,19 @@ export function getRepositoryById(
         {
             method: "GET",
             authenticated: true,
+        }
+    );
+}
+
+export function createRepository(
+    request: CreateRepositoryRequest
+) {
+    return apiRequest<RepositoryDetails>(
+        "/api/v1/repositories",
+        {
+            method: "POST",
+            authenticated: true,
+            body: JSON.stringify(request),
         }
     );
 }

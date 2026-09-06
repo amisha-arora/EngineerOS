@@ -1,6 +1,11 @@
-import type { ReactNode } from "react";
+import {
+    useState,
+    type ReactNode,
+} from "react";
+
 import Header from "../components/dashboard/Header";
 import Sidebar from "../components/dashboard/Sidebar";
+
 import "../styles/dashboard.css";
 
 type AppLayoutProps = {
@@ -10,12 +15,29 @@ type AppLayoutProps = {
 export default function AppLayout({
     children,
 }: AppLayoutProps) {
+    const [
+        isSidebarOpen,
+        setIsSidebarOpen,
+    ] = useState(false);
+
     return (
         <div className="app-shell">
-            <Sidebar />
+            <Sidebar
+                isOpen={isSidebarOpen}
+                onClose={() =>
+                    setIsSidebarOpen(false)
+                }
+            />
 
             <div className="app-main">
-                <Header />
+                <Header
+                    onMenuClick={() =>
+                        setIsSidebarOpen(
+                            (current) =>
+                                !current
+                        )
+                    }
+                />
 
                 <main className="app-content">
                     {children}

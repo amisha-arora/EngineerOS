@@ -7,6 +7,7 @@ import App from "./App";
 import { AuthProvider } from "./features/auth/AuthContext";
 
 import "./index.css";
+import "./styles/components.css";
 
 createRoot(
     document.getElementById("root")!

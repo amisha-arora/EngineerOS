@@ -7,12 +7,17 @@ import {
 } from "react";
 
 import {
-    getCurrentUser,
     loginUser,
     logoutUser,
 } from "../../api/authApi";
 
-import { tokenStorage } from "../../utils/tokenStorage";
+import {
+    getCurrentUser,
+} from "../../api/userApi";
+
+import {
+    tokenStorage,
+} from "../../utils/tokenStorage";
 
 import type {
     CurrentUser,
@@ -21,7 +26,9 @@ import type {
 
 type AuthContextValue = {
     user: CurrentUser | null;
+
     isAuthenticated: boolean;
+
     isInitializing: boolean;
 
     login: (
@@ -43,29 +50,60 @@ type AuthProviderProps = {
 export function AuthProvider({
     children,
 }: AuthProviderProps) {
-    const [user, setUser] =
-        useState<CurrentUser | null>(null);
+    const [
+        user,
+        setUser,
+    ] = useState<CurrentUser | null>(
+        null
+    );
 
-    const [isInitializing, setIsInitializing] =
-        useState(true);
+    const [
+        isInitializing,
+        setIsInitializing,
+    ] = useState(true);
 
+    /*
+     * Runs once when the application starts.
+     *
+     * If an access token already exists,
+     * try to restore the authenticated user.
+     */
     useEffect(() => {
         const restoreSession = async () => {
-            const token =
+            const accessToken =
                 tokenStorage.getAccessToken();
 
-            if (!token) {
+            /*
+             * No token means the user
+             * is not currently logged in.
+             */
+            if (!accessToken) {
                 setIsInitializing(false);
+
                 return;
             }
 
             try {
+                /*
+                 * The token is sent by apiClient
+                 * because /users/me is an
+                 * authenticated endpoint.
+                 */
                 const currentUser =
                     await getCurrentUser();
 
                 setUser(currentUser);
             } catch {
+                /*
+                 * The token may be expired,
+                 * invalid, or otherwise unusable.
+                 *
+                 * Remove authentication data
+                 * instead of keeping a broken
+                 * session in the browser.
+                 */
                 tokenStorage.clear();
+
                 setUser(null);
             } finally {
                 setIsInitializing(false);
@@ -75,6 +113,21 @@ export function AuthProvider({
         restoreSession();
     }, []);
 
+    /*
+     * Login flow:
+     *
+     * credentials
+     *      ↓
+     * /auth/login
+     *      ↓
+     * access + refresh tokens
+     *      ↓
+     * save tokens
+     *      ↓
+     * /users/me
+     *      ↓
+     * authenticated user state
+     */
     const login = async (
         request: LoginRequest
     ) => {
@@ -92,21 +145,49 @@ export function AuthProvider({
 
             setUser(currentUser);
         } catch (error) {
+            /*
+             * If we receive tokens but cannot
+             * retrieve the current user, do not
+             * leave an incomplete session behind.
+             */
             tokenStorage.clear();
+
+            setUser(null);
+
             throw error;
         }
     };
 
+    /*
+     * Logout flow:
+     *
+     * refresh token
+     *      ↓
+     * backend logout/revocation
+     *      ↓
+     * always clear local tokens
+     *      ↓
+     * clear authenticated user state
+     */
     const logout = async () => {
         const refreshToken =
             tokenStorage.getRefreshToken();
 
         try {
             if (refreshToken) {
-                await logoutUser(refreshToken);
+                await logoutUser(
+                    refreshToken
+                );
             }
         } finally {
+            /*
+             * Even if the backend logout request
+             * fails because the server is offline,
+             * the local user should still be
+             * logged out.
+             */
             tokenStorage.clear();
+
             setUser(null);
         }
     };
@@ -115,9 +196,14 @@ export function AuthProvider({
         <AuthContext.Provider
             value={{
                 user,
-                isAuthenticated: user !== null,
+
+                isAuthenticated:
+                    user !== null,
+
                 isInitializing,
+
                 login,
+
                 logout,
             }}
         >
@@ -126,6 +212,17 @@ export function AuthProvider({
     );
 }
 
+/*
+ * We intentionally keep this hook in the same
+ * file as AuthProvider for a simpler project
+ * structure.
+ *
+ * React Fast Refresh prefers files that only
+ * export components, so this one lint warning
+ * is intentionally suppressed.
+ */
+
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
     const context =
         useContext(AuthContext);

@@ -9,7 +9,7 @@ import LearningPage from "../pages/LearningPage";
 import AIMentorPage from "../pages/AIMentorPage";
 import ProtectedRoute from "./ProtectedRoute";
 import RepositoryDetailsPage from "../pages/RepositoryDetailsPage";
-
+import RepositoryUploadPage from "../pages/RepositoryUploadPage";
 export default function AppRoutes() {
     return (
         <Routes>
@@ -53,6 +53,15 @@ export default function AppRoutes() {
                     </ProtectedRoute>
                 }
             />
+            <Route
+                path="/repositories/upload"
+                element={
+                    <ProtectedRoute>
+                        <RepositoryUploadPage />
+                    </ProtectedRoute>
+                }
+            />
+
 
             <Route
                 path="/learning"

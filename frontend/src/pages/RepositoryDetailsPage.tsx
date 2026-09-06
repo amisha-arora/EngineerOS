@@ -10,6 +10,13 @@ import {
 
 import AppLayout from "../layouts/AppLayout";
 
+import Button from "../components/common/Button";
+import Card from "../components/common/Card";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import ErrorMessage from "../components/common/ErrorMessage";
+import PageHeader from "../components/common/PageHeader";
+import Modal from "../components/common/Modal";
+
 import {
     deleteRepository,
     getRepositoryById,
@@ -39,11 +46,25 @@ export default function RepositoryDetailsPage() {
         setError,
     ] = useState("");
 
+    const [
+        isDeleteModalOpen,
+        setIsDeleteModalOpen,
+    ] = useState(false);
+
+    const [
+        isDeleting,
+        setIsDeleting,
+    ] = useState(false);
+
     useEffect(() => {
         const loadRepository = async () => {
             if (!repositoryId) {
-                setError("Repository id is missing.");
+                setError(
+                    "Repository id is missing."
+                );
+
                 setIsLoading(false);
+
                 return;
             }
 
@@ -73,19 +94,15 @@ export default function RepositoryDetailsPage() {
             return;
         }
 
-        const confirmed =
-            window.confirm(
-                "Are you sure you want to delete this repository?"
-            );
-
-        if (!confirmed) {
-            return;
-        }
+        setIsDeleting(true);
+        setError("");
 
         try {
             await deleteRepository(
                 repositoryId
             );
+
+            setIsDeleteModalOpen(false);
 
             navigate(
                 "/repositories",
@@ -99,15 +116,17 @@ export default function RepositoryDetailsPage() {
                     ? error.message
                     : "Unable to delete repository."
             );
+        } finally {
+            setIsDeleting(false);
         }
     };
 
     if (isLoading) {
         return (
             <AppLayout>
-                <div className="repository-loading">
-                    Loading repository...
-                </div>
+                <LoadingSpinner
+                    message="Loading repository..."
+                />
             </AppLayout>
         );
     }
@@ -117,19 +136,21 @@ export default function RepositoryDetailsPage() {
             <AppLayout>
                 <div className="repository-details-page">
 
-                    <button
+                    <Button
                         type="button"
-                        className="repository-back-button"
+                        variant="secondary"
                         onClick={() =>
-                            navigate("/repositories")
+                            navigate(
+                                "/repositories"
+                            )
                         }
                     >
                         ← Back to repositories
-                    </button>
+                    </Button>
 
-                    <div className="repository-error">
-                        {error}
-                    </div>
+                    <ErrorMessage
+                        message={error}
+                    />
 
                 </div>
             </AppLayout>
@@ -140,7 +161,23 @@ export default function RepositoryDetailsPage() {
         return (
             <AppLayout>
                 <div className="repository-details-page">
-                    Repository not found.
+
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() =>
+                            navigate(
+                                "/repositories"
+                            )
+                        }
+                    >
+                        ← Back to repositories
+                    </Button>
+
+                    <ErrorMessage
+                        message="Repository not found."
+                    />
+
                 </div>
             </AppLayout>
         );
@@ -155,46 +192,46 @@ export default function RepositoryDetailsPage() {
         <AppLayout>
             <div className="repository-details-page">
 
-                <button
+                <Button
                     type="button"
-                    className="repository-back-button"
+                    variant="secondary"
                     onClick={() =>
-                        navigate("/repositories")
+                        navigate(
+                            "/repositories"
+                        )
                     }
                 >
                     ← Back to repositories
-                </button>
+                </Button>
 
-                <div className="repository-details-header">
-
-                    <div>
-                        <h1>
-                            {repository.name}
-                        </h1>
-
-                        <a
-                            href={repository.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="repository-url"
+                <PageHeader
+                    title={repository.name}
+                    description="Repository details and workspace information."
+                    action={
+                        <Button
+                            type="button"
+                            variant="danger"
+                            onClick={() =>
+                                setIsDeleteModalOpen(true)
+                            }
                         >
-                            {repository.url}
-                        </a>
-                    </div>
+                            Delete Repository
+                        </Button>
+                    }
+                />
 
-                    <button
-                        type="button"
-                        className="repository-delete-button"
-                        onClick={handleDelete}
-                    >
-                        Delete Repository
-                    </button>
-
-                </div>
+                <a
+                    href={repository.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="repository-url"
+                >
+                    {repository.url}
+                </a>
 
                 <div className="repository-details-grid">
 
-                    <section className="repository-details-card">
+                    <Card className="repository-details-card">
                         <span className="details-label">
                             Status
                         </span>
@@ -206,9 +243,9 @@ export default function RepositoryDetailsPage() {
                         <span className="details-note">
                             Temporary status
                         </span>
-                    </section>
+                    </Card>
 
-                    <section className="repository-details-card">
+                    <Card className="repository-details-card">
                         <span className="details-label">
                             Created
                         </span>
@@ -216,9 +253,9 @@ export default function RepositoryDetailsPage() {
                         <strong>
                             {createdDate}
                         </strong>
-                    </section>
+                    </Card>
 
-                    <section className="repository-details-card">
+                    <Card className="repository-details-card">
                         <span className="details-label">
                             Last analyzed
                         </span>
@@ -230,11 +267,11 @@ export default function RepositoryDetailsPage() {
                         <span className="details-note">
                             Temporary value
                         </span>
-                    </section>
+                    </Card>
 
                 </div>
 
-                <section className="repository-info-panel">
+                <Card className="repository-info-panel">
 
                     <div className="panel-header">
                         <div>
@@ -293,7 +330,57 @@ export default function RepositoryDetailsPage() {
 
                     </div>
 
-                </section>
+                </Card>
+
+                <Modal
+                    isOpen={isDeleteModalOpen}
+                    title="Delete Repository"
+                    onClose={() => {
+                        if (!isDeleting) {
+                            setIsDeleteModalOpen(false);
+                        }
+                    }}
+                >
+                    <div className="delete-modal-content">
+
+                        <p>
+                            Are you sure you want to delete{" "}
+                            <strong>
+                                {repository.name}
+                            </strong>
+                            ?
+                        </p>
+
+                        <p className="delete-modal-warning">
+                            This action cannot be undone.
+                        </p>
+
+                        <div className="delete-modal-actions">
+
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                disabled={isDeleting}
+                                onClick={() =>
+                                    setIsDeleteModalOpen(false)
+                                }
+                            >
+                                Cancel
+                            </Button>
+
+                            <Button
+                                type="button"
+                                variant="danger"
+                                isLoading={isDeleting}
+                                onClick={handleDelete}
+                            >
+                                Delete Repository
+                            </Button>
+
+                        </div>
+
+                    </div>
+                </Modal>
 
             </div>
         </AppLayout>

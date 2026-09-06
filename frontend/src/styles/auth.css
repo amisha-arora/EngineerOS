@@ -90,63 +90,127 @@ input {
     gap: 18px;
 }
 
+/*
+    Register first name + last name.
+    Our updated RegisterPage uses .name-fields.
+*/
+.name-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/*
+    Keep this too in case another page
+    still uses the old .form-row class.
+*/
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
 }
 
-.form-group {
-    display: grid;
+/* COMMON INPUT COMPONENT */
+
+.auth-form .app-input-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
 }
 
-    .form-group label {
+    .auth-form .app-input-group label {
         color: #e7e7e7;
         font-size: 13px;
         font-weight: 600;
     }
 
-    .form-group input {
-        width: 100%;
-        height: 58px;
-        padding: 0 20px;
-        border: 1px solid #5a5a5a;
-        border-radius: 30px;
-        outline: none;
-        background: transparent;
-        color: white;
-        font-size: 16px;
+.auth-form .app-input {
+    width: 100%;
+    height: 58px;
+    padding: 0 20px;
+    border: 1px solid #5a5a5a;
+    border-radius: 30px;
+    outline: none;
+    background: transparent;
+    color: #ffffff;
+    font-size: 16px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+    .auth-form .app-input::placeholder {
+        color: #8b8b8b;
     }
 
-        .form-group input::placeholder {
-            color: #8b8b8b;
-        }
+    .auth-form .app-input:focus {
+        border-color: #35bfd3;
+        box-shadow: 0 0 0 3px rgba(53, 191, 211, 0.08);
+    }
 
-        .form-group input:focus {
-            border-color: #35bfd3;
-        }
+    .auth-form .app-input.app-input-error {
+        border-color: #ff7070;
+    }
+
+.auth-form .app-input-hint {
+    color: #858585;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.auth-form .app-input-error-message {
+    color: #ff7070;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* OLD / SPECIALIZED FORM GROUPS */
+
+.form-group {
+    display: grid;
+    gap: 8px;
+}
+
+    .form-group > label,
+    .label-row label {
+        color: #e7e7e7;
+        font-size: 13px;
+        font-weight: 600;
+    }
 
 .label-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
 }
 
 /* PASSWORD */
 
 .password-wrapper {
     position: relative;
+    width: 100%;
 }
 
-    .password-wrapper input {
-        padding-right: 75px;
+    /*
+    Input component creates its own wrapper.
+    Make sure that wrapper fills the password row.
+*/
+    .password-wrapper .app-input-group {
+        width: 100%;
+    }
+
+    .password-wrapper .app-input {
+        width: 100%;
+        /*
+        Leave space for Show / Hide button.
+    */
+        padding-right: 78px;
     }
 
 .password-toggle {
     position: absolute;
     right: 20px;
-    top: 50%;
+    top: 29px;
     transform: translateY(-50%);
     border: none;
     background: transparent;
@@ -154,7 +218,12 @@ input {
     cursor: pointer;
     font-size: 13px;
     font-weight: 600;
+    z-index: 2;
 }
+
+    .password-toggle:hover {
+        color: #62d7e8;
+    }
 
 .text-button {
     border: none;
@@ -164,9 +233,30 @@ input {
     font-size: 12px;
 }
 
-/* MAIN BUTTON */
+    .text-button:hover:not(:disabled) {
+        color: #62d7e8;
+    }
 
-.primary-button {
+    .text-button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+
+/* REUSABLE BUTTON */
+
+.auth-form .app-button {
+    width: 100%;
+    min-height: 58px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/*
+    Login/Register submit buttons currently also
+    receive className="primary-button".
+*/
+.auth-form .primary-button {
     width: 100%;
     height: 58px;
     border: none;
@@ -176,14 +266,15 @@ input {
     cursor: pointer;
     font-size: 16px;
     font-weight: 600;
-    transition: transform 150ms ease, opacity 150ms ease;
+    transition: transform 150ms ease, opacity 150ms ease, background 150ms ease;
 }
 
-    .primary-button:hover:not(:disabled) {
+    .auth-form .primary-button:hover:not(:disabled) {
         transform: translateY(-1px);
+        background: #ffffff;
     }
 
-    .primary-button:disabled {
+    .auth-form .primary-button:disabled {
         opacity: 0.65;
         cursor: not-allowed;
     }
@@ -224,14 +315,17 @@ input {
     cursor: pointer;
     font-size: 16px;
     font-weight: 600;
+    transition: background 150ms ease, border-color 150ms ease;
 }
 
     .google-button:hover {
         background: #191a1c;
+        border-color: #737373;
     }
 
 /* BOTTOM LINK */
 
+.auth-switch-text,
 .auth-switch {
     margin-top: 26px;
     text-align: center;
@@ -239,17 +333,45 @@ input {
     font-size: 14px;
 }
 
+    .auth-switch-text a,
     .auth-switch a {
         color: #3fc1d4;
         text-decoration: none;
         font-weight: 600;
     }
 
+        .auth-switch-text a:hover,
         .auth-switch a:hover {
             text-decoration: underline;
         }
 
-/* ERRORS */
+/* REUSABLE ERROR MESSAGE */
+
+.auth-form .error-message {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 92, 92, 0.35);
+    border-radius: 10px;
+    background: rgba(255, 75, 75, 0.08);
+    color: #ff8181;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/*
+    Keep these temporarily because other
+    auth code may still use the old classes.
+*/
+
+.api-error {
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 92, 92, 0.35);
+    border-radius: 10px;
+    background: rgba(255, 75, 75, 0.08);
+    color: #ff8181;
+    font-size: 13px;
+    line-height: 1.5;
+}
 
 .field-error {
     color: #ff7070;
@@ -259,6 +381,15 @@ input {
 .field-hint {
     color: #858585;
     font-size: 11px;
+}
+
+/* TABLET */
+
+@media (max-width: 800px) {
+    .auth-content,
+    .register-content {
+        width: min(100%, 520px);
+    }
 }
 
 /* MOBILE */
@@ -278,20 +409,51 @@ input {
         padding: 120px 20px 35px;
     }
 
-    .auth-heading h1 {
-        font-size: 30px;
+    .auth-heading {
+        margin-bottom: 26px;
     }
 
+        .auth-heading h1 {
+            font-size: 30px;
+        }
+
+        .auth-heading p {
+            font-size: 14px;
+        }
+
+    .name-fields,
     .form-row {
         grid-template-columns: 1fr;
     }
 }
-.api-error {
-    padding: 12px 14px;
-    border: 1px solid rgba(255, 92, 92, 0.35);
-    border-radius: 10px;
-    background: rgba(255, 75, 75, 0.08);
-    color: #ff8181;
-    font-size: 13px;
-    line-height: 1.5;
+
+/* SMALL MOBILE */
+
+@media (max-width: 420px) {
+    .auth-header {
+        left: 18px;
+    }
+
+    .auth-logo {
+        width: 155px;
+    }
+
+    .auth-center {
+        padding: 110px 16px 30px;
+    }
+
+    .auth-heading h1 {
+        font-size: 27px;
+    }
+
+    .auth-form .app-input,
+    .auth-form .app-button,
+    .google-button {
+        height: 54px;
+        min-height: 54px;
+    }
+
+    .password-toggle {
+        top: 27px;
+    }
 }
