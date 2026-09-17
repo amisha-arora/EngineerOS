@@ -5,9 +5,13 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using EngineerOS.Api.Middleware;
 using EngineerOS.Api.Services;
-
+using EngineerOS.Application.Features.Repositories.GetFiles;
 using EngineerOS.Application.Abstractions.Authentication;
 using Microsoft.OpenApi;
+using EngineerOS.Application.Abstractions.Extraction;
+using EngineerOS.Application.Abstractions.Storage;
+using EngineerOS.Infrastructure.Extraction;
+using EngineerOS.Infrastructure.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -109,6 +113,23 @@ builder.Services.AddCors(options =>
         });
 });
 
+// why same storageRoot becuase both services must agree on where the repository lives
+var storageRoot =
+    Path.Combine(
+        builder.Environment.ContentRootPath,
+        "storage");
+
+builder.Services.AddScoped<IRepositoryStorage>(
+    _ => new LocalRepositoryStorage(storageRoot));
+
+builder.Services.AddScoped<IRepositoryExtractor>(
+    _ => new RepositoryExtractor(storageRoot));
+
+builder.Services.AddScoped<IRepositoryFileReader>(
+    _ => new LocalRepositoryFileReader(storageRoot));
+
+builder.Services.AddScoped<GetRepositoryFilesService>();
+
 var app = builder.Build();
 
 // Enable OpenAPI only during development.
@@ -142,7 +163,3 @@ app.MapControllers();
 
 app.Run();
 
-// it is added to so that the external project could also refrence program.cs for smooth and easy operating
-public partial class Program
-{
-}

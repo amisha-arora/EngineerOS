@@ -6,7 +6,8 @@ using EngineerOS.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
+using EngineerOS.Application.Abstractions.Storage;
+using EngineerOS.Infrastructure.Storage;
 namespace EngineerOS.Infrastructure;
 
 public static class DependencyInjection
@@ -31,6 +32,10 @@ public static class DependencyInjection
         // Register repository implementation. The interface is defined in Application.Abstractions
         services.AddScoped<RepositoryRepository>();
         services.AddScoped<IRepositoryRepository,RepositoryRepository>();
+        services.AddScoped<IRepositoryStorage>(_ => new LocalRepositoryStorage(
+            Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "storage")));
 
 
         return services;

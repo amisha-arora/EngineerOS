@@ -4,8 +4,11 @@ using EngineerOS.Application.Features.Repositories.GetById;
 using EngineerOS.Application.Features.Repositories.Delete;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Http;
+using EngineerOS.Application.Features.Repositories.GetFiles;
 namespace EngineerOS.Api.Controllers;
+
+using System.IO;
 
 [ApiController]
 [Route("api/v1/repositories")]
@@ -16,27 +19,53 @@ public sealed class RepositoriesController : ControllerBase
     private readonly GetRepositoriesService _getRepositoriesService;
     private readonly GetRepositoryByIdService _getRepositoryByIdService;
     private readonly DeleteRepositoryService _deleteRepositoryService;
+    private readonly GetRepositoryFilesService _getRepositoryFilesService;
 
     public RepositoriesController(
         CreateRepositoryService createRepositoryService,
         GetRepositoriesService getRepositoriesService,
         GetRepositoryByIdService getRepositoryByIdService,
-        DeleteRepositoryService deleteRepositoryService)
+        DeleteRepositoryService deleteRepositoryService,
+        GetRepositoryFilesService getRepositoryFilesService)
     {
         _createRepositoryService = createRepositoryService;
         _getRepositoriesService = getRepositoriesService;
         _getRepositoryByIdService = getRepositoryByIdService;
         _deleteRepositoryService = deleteRepositoryService;
+        _getRepositoryFilesService = getRepositoryFilesService;
     }
 
     [HttpPost]
     public async Task<IActionResult> Create(
-        CreateRepositoryRequest request,
-        CancellationToken cancellationToken)
+    [FromForm] string name,
+    [FromForm] string url,
+    IFormFile file,
+    CancellationToken cancellationToken)
     {
-        var response = await _createRepositoryService.CreateAsync(request, cancellationToken);
+        await using var fileStream = file.OpenReadStream();
 
-        return StatusCode(StatusCodes.Status201Created, response);
+        var request = new CreateRepositoryRequest(
+            name,
+            url,
+            fileStream,
+            file.FileName);
+        try
+        {
+            var response = await _createRepositoryService.CreateAsync(
+                request,
+                cancellationToken);
+
+            return StatusCode(
+                StatusCodes.Status201Created,
+                response);
+        }
+        catch (InvalidDataException exception)
+        {
+            return BadRequest(new
+            {
+                error = exception.Message
+            });
+        }
     }
 
     [HttpGet]
@@ -53,6 +82,23 @@ public sealed class RepositoriesController : ControllerBase
         CancellationToken cancellationToken)
     {
         var response = await _getRepositoryByIdService.GetAsync(repositoryId, cancellationToken);
+
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet("{repositoryId:guid}/files")]
+    public async Task<IActionResult> GetFiles(
+    Guid repositoryId,
+    CancellationToken cancellationToken)
+    {
+        var response = await _getRepositoryFilesService.GetAsync(
+            repositoryId,
+            cancellationToken);
 
         if (response is null)
         {
