@@ -31,3 +31,9 @@ secrets.json
 
 # EF Core generated SQL (if you ever create any)
 *.sql
+
+# EngineerOS local uploaded files
+storage/
+
+# Local ASP.NET Core settings and secrets
+appsettings.Development.json

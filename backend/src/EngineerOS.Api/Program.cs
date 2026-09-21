@@ -126,7 +126,7 @@ builder.Services.AddScoped<IRepositoryExtractor>(
     _ => new RepositoryExtractor(storageRoot));
 
 builder.Services.AddScoped<IRepositoryFileReader>(
-    _ => new LocalRepositoryFileReader(storageRoot));
+    _ => new EngineerOS.Infrastructure.FileStorage.Repositories.LocalRepositoryFileReader(storageRoot));
 
 builder.Services.AddScoped<GetRepositoryFilesService>();
 
