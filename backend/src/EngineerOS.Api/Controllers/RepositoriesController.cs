@@ -3,6 +3,7 @@ using EngineerOS.Application.Features.Repositories.GetAll;
 using EngineerOS.Application.Features.Repositories.GetById;
 using EngineerOS.Application.Features.Repositories.Delete;
 using EngineerOS.Application.Features.Repositories.GetCSharpTypes;
+using EngineerOS.Application.Features.Repositories.GetCSharpMethods;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +23,8 @@ public sealed class RepositoriesController : ControllerBase
     private readonly DeleteRepositoryService _deleteRepositoryService;
     private readonly GetRepositoryFilesService _getRepositoryFilesService;
     private readonly GetRepositoryCSharpTypesService _getRepositoryCSharpTypesService;
+    private readonly GetRepositoryCSharpMethodsService _getRepositoryCSharpMethodsService;
+
 
     public RepositoriesController(
         CreateRepositoryService createRepositoryService,
@@ -29,7 +32,8 @@ public sealed class RepositoriesController : ControllerBase
         GetRepositoryByIdService getRepositoryByIdService,
         DeleteRepositoryService deleteRepositoryService,
         GetRepositoryFilesService getRepositoryFilesService,
-        GetRepositoryCSharpTypesService getRepositoryCSharpTypesService)
+        GetRepositoryCSharpTypesService getRepositoryCSharpTypesService,
+        GetRepositoryCSharpMethodsService getRepositoryCSharpMethodsService)
     {
         _createRepositoryService = createRepositoryService;
         _getRepositoriesService = getRepositoriesService;
@@ -37,6 +41,7 @@ public sealed class RepositoriesController : ControllerBase
         _deleteRepositoryService = deleteRepositoryService;
         _getRepositoryFilesService = getRepositoryFilesService;
         _getRepositoryCSharpTypesService = getRepositoryCSharpTypesService;
+        _getRepositoryCSharpMethodsService = getRepositoryCSharpMethodsService;
     }
 
     [HttpPost]
@@ -117,6 +122,23 @@ public sealed class RepositoriesController : ControllerBase
     CancellationToken cancellationToken)
     {
         var response = await _getRepositoryCSharpTypesService.GetAsync(
+            repositoryId,
+            cancellationToken);
+
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet("{repositoryId:guid}/csharp-methods")]
+    public async Task<IActionResult> GetCSharpMethods(
+    Guid repositoryId,
+    CancellationToken cancellationToken)
+    {
+        var response = await _getRepositoryCSharpMethodsService.GetAsync(
             repositoryId,
             cancellationToken);
 

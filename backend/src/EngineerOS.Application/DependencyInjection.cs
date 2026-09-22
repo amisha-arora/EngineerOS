@@ -10,6 +10,7 @@ using EngineerOS.Application.Features.Repositories.Delete;
 using EngineerOS.Application.Features.Repositories.GetAll;
 using EngineerOS.Application.Features.Repositories.GetById;
 using EngineerOS.Application.Features.Repositories.GetCSharpTypes;
+using EngineerOS.Application.Features.Repositories.GetCSharpMethods;
 
 namespace EngineerOS.Application;
 
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<GetRepositoryByIdService>();
         services.AddScoped<DeleteRepositoryService>();
         services.AddScoped<GetRepositoryCSharpTypesService>();
+        services.AddScoped<GetRepositoryCSharpMethodsService>();
 
         return services;
     }

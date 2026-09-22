@@ -131,6 +131,9 @@ builder.Services.AddScoped<ICSharpTypeExtractor>(
 builder.Services.AddScoped<IRepositoryFileReader>(
     _ => new EngineerOS.Infrastructure.FileStorage.Repositories.LocalRepositoryFileReader(storageRoot));
 
+builder.Services.AddScoped<ICSharpMethodExtractor>(
+    _ => new CSharpMethodExtractor(storageRoot));
+
 builder.Services.AddScoped<GetRepositoryFilesService>();
 
 var app = builder.Build();
