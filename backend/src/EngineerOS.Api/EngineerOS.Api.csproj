@@ -16,6 +16,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <!-- Resolve code analysis version conflict by referencing Common 5.9.0 explicitly -->
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="5.9.0" />
   </ItemGroup>
 
   <ItemGroup>

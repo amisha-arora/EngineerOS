@@ -2,6 +2,7 @@ using EngineerOS.Application.Features.Repositories.Create;
 using EngineerOS.Application.Features.Repositories.GetAll;
 using EngineerOS.Application.Features.Repositories.GetById;
 using EngineerOS.Application.Features.Repositories.Delete;
+using EngineerOS.Application.Features.Repositories.GetCSharpTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -20,19 +21,22 @@ public sealed class RepositoriesController : ControllerBase
     private readonly GetRepositoryByIdService _getRepositoryByIdService;
     private readonly DeleteRepositoryService _deleteRepositoryService;
     private readonly GetRepositoryFilesService _getRepositoryFilesService;
+    private readonly GetRepositoryCSharpTypesService _getRepositoryCSharpTypesService;
 
     public RepositoriesController(
         CreateRepositoryService createRepositoryService,
         GetRepositoriesService getRepositoriesService,
         GetRepositoryByIdService getRepositoryByIdService,
         DeleteRepositoryService deleteRepositoryService,
-        GetRepositoryFilesService getRepositoryFilesService)
+        GetRepositoryFilesService getRepositoryFilesService,
+        GetRepositoryCSharpTypesService getRepositoryCSharpTypesService)
     {
         _createRepositoryService = createRepositoryService;
         _getRepositoriesService = getRepositoriesService;
         _getRepositoryByIdService = getRepositoryByIdService;
         _deleteRepositoryService = deleteRepositoryService;
         _getRepositoryFilesService = getRepositoryFilesService;
+        _getRepositoryCSharpTypesService = getRepositoryCSharpTypesService;
     }
 
     [HttpPost]
@@ -107,6 +111,22 @@ public sealed class RepositoriesController : ControllerBase
 
         return Ok(response);
     }
+    [HttpGet("{repositoryId:guid}/csharp-types")]
+    public async Task<IActionResult> GetCSharpTypes(
+    Guid repositoryId,
+    CancellationToken cancellationToken)
+    {
+        var response = await _getRepositoryCSharpTypesService.GetAsync(
+            repositoryId,
+            cancellationToken);
+
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(response);
+    }
 
     [HttpDelete("{repositoryId:guid}")]
     public async Task<IActionResult> Delete(
@@ -124,4 +144,5 @@ public sealed class RepositoriesController : ControllerBase
 
         return NoContent();
     }
+
 }
