@@ -27,4 +27,16 @@ public sealed class RepositoryAnalysis
     public DateTime? CompletedAtUtc { get; private set; }
 
     public Repository Repository { get; private set; } = null!;
+
+    public void MarkCompleted()
+    {
+        Status = "Completed";
+        CompletedAtUtc = DateTime.UtcNow;
+    }
+
+    public void MarkFailed()
+    {
+        Status = "Failed";
+        CompletedAtUtc = DateTime.UtcNow;
+    }
 }

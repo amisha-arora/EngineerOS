@@ -5,6 +5,7 @@ using EngineerOS.Application.Features.Repositories.Delete;
 using EngineerOS.Application.Features.Repositories.GetCSharpTypes;
 using EngineerOS.Application.Features.Repositories.GetCSharpMethods;
 using EngineerOS.Application.Features.Repositories.GetCSharpDependencies;
+using EngineerOS.Application.Features.Repositories.Analyze;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -26,6 +27,7 @@ public sealed class RepositoriesController : ControllerBase
     private readonly GetRepositoryCSharpTypesService _getRepositoryCSharpTypesService;
     private readonly GetRepositoryCSharpMethodsService _getRepositoryCSharpMethodsService;
     private readonly GetRepositoryCSharpDependenciesService _getRepositoryCSharpDependenciesService;
+    private readonly AnalyzeRepositoryService _analyzeRepositoryService;
 
 
     public RepositoriesController(
@@ -36,7 +38,8 @@ public sealed class RepositoriesController : ControllerBase
         GetRepositoryFilesService getRepositoryFilesService,
         GetRepositoryCSharpTypesService getRepositoryCSharpTypesService,
         GetRepositoryCSharpMethodsService getRepositoryCSharpMethodsService,
-        GetRepositoryCSharpDependenciesService getRepositoryCSharpDependenciesService
+        GetRepositoryCSharpDependenciesService getRepositoryCSharpDependenciesService,
+        AnalyzeRepositoryService analyzeRepositoryService
         )
     {
         _createRepositoryService = createRepositoryService;
@@ -47,6 +50,7 @@ public sealed class RepositoriesController : ControllerBase
         _getRepositoryCSharpTypesService = getRepositoryCSharpTypesService;
         _getRepositoryCSharpMethodsService = getRepositoryCSharpMethodsService;
         _getRepositoryCSharpDependenciesService =getRepositoryCSharpDependenciesService;
+        _analyzeRepositoryService = analyzeRepositoryService;
     }
 
     [HttpPost]
@@ -80,6 +84,23 @@ public sealed class RepositoriesController : ControllerBase
                 error = exception.Message
             });
         }
+    }
+
+    [HttpPost("{repositoryId:guid}/analyze")]
+    public async Task<IActionResult> Analyze(
+    Guid repositoryId,
+    CancellationToken cancellationToken)
+    {
+        var response = await _analyzeRepositoryService.AnalyzeAsync(
+            repositoryId,
+            cancellationToken);
+
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(response);
     }
 
     [HttpGet]

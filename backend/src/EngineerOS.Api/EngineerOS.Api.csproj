@@ -16,8 +16,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <!-- Resolve code analysis version conflict by referencing Common 5.9.0 explicitly -->
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="5.9.0" />
+    <!-- Align code analysis packages to 5.0.0 to match EF.Design dependencies -->
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="5.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
+  </ItemGroup>
+
+  <!-- Exclude any extracted repository files under the API project's storage folder from compilation -->
+  <ItemGroup>
+    <Compile Remove="storage\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

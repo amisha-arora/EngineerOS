@@ -29,13 +29,18 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
-        // Register repository implementation. The interface is defined in Application.Abstractions
+        
         services.AddScoped<RepositoryRepository>();
         services.AddScoped<IRepositoryRepository,RepositoryRepository>();
         services.AddScoped<IRepositoryStorage>(_ => new LocalRepositoryStorage(
             Path.Combine(
                 Directory.GetCurrentDirectory(),
                 "storage")));
+        services.AddScoped<IRepositoryAnalysisRepository,
+        RepositoryAnalysisRepository>();
+
+            services.AddScoped<IRepositoryAnalysisWriter,
+                RepositoryAnalysisWriter>();
 
 
         return services;
