@@ -134,6 +134,9 @@ builder.Services.AddScoped<IRepositoryFileReader>(
 builder.Services.AddScoped<ICSharpMethodExtractor>(
     _ => new CSharpMethodExtractor(storageRoot));
 
+builder.Services.AddScoped<ICSharpDependencyExtractor>(
+    _ => new CSharpDependencyExtractor(storageRoot));
+
 builder.Services.AddScoped<GetRepositoryFilesService>();
 
 var app = builder.Build();

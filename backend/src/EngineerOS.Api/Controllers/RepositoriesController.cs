@@ -4,6 +4,7 @@ using EngineerOS.Application.Features.Repositories.GetById;
 using EngineerOS.Application.Features.Repositories.Delete;
 using EngineerOS.Application.Features.Repositories.GetCSharpTypes;
 using EngineerOS.Application.Features.Repositories.GetCSharpMethods;
+using EngineerOS.Application.Features.Repositories.GetCSharpDependencies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +25,7 @@ public sealed class RepositoriesController : ControllerBase
     private readonly GetRepositoryFilesService _getRepositoryFilesService;
     private readonly GetRepositoryCSharpTypesService _getRepositoryCSharpTypesService;
     private readonly GetRepositoryCSharpMethodsService _getRepositoryCSharpMethodsService;
+    private readonly GetRepositoryCSharpDependenciesService _getRepositoryCSharpDependenciesService;
 
 
     public RepositoriesController(
@@ -33,7 +35,9 @@ public sealed class RepositoriesController : ControllerBase
         DeleteRepositoryService deleteRepositoryService,
         GetRepositoryFilesService getRepositoryFilesService,
         GetRepositoryCSharpTypesService getRepositoryCSharpTypesService,
-        GetRepositoryCSharpMethodsService getRepositoryCSharpMethodsService)
+        GetRepositoryCSharpMethodsService getRepositoryCSharpMethodsService,
+        GetRepositoryCSharpDependenciesService getRepositoryCSharpDependenciesService
+        )
     {
         _createRepositoryService = createRepositoryService;
         _getRepositoriesService = getRepositoriesService;
@@ -42,6 +46,7 @@ public sealed class RepositoriesController : ControllerBase
         _getRepositoryFilesService = getRepositoryFilesService;
         _getRepositoryCSharpTypesService = getRepositoryCSharpTypesService;
         _getRepositoryCSharpMethodsService = getRepositoryCSharpMethodsService;
+        _getRepositoryCSharpDependenciesService =getRepositoryCSharpDependenciesService;
     }
 
     [HttpPost]
@@ -116,6 +121,7 @@ public sealed class RepositoriesController : ControllerBase
 
         return Ok(response);
     }
+
     [HttpGet("{repositoryId:guid}/csharp-types")]
     public async Task<IActionResult> GetCSharpTypes(
     Guid repositoryId,
@@ -139,6 +145,23 @@ public sealed class RepositoriesController : ControllerBase
     CancellationToken cancellationToken)
     {
         var response = await _getRepositoryCSharpMethodsService.GetAsync(
+            repositoryId,
+            cancellationToken);
+
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet("{repositoryId:guid}/csharp-dependencies")]
+    public async Task<IActionResult> GetCSharpDependencies(
+    Guid repositoryId,
+    CancellationToken cancellationToken)
+    {
+        var response = await _getRepositoryCSharpDependenciesService.GetAsync(
             repositoryId,
             cancellationToken);
 
