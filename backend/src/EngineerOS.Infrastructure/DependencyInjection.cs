@@ -36,12 +36,10 @@ public static class DependencyInjection
             Path.Combine(
                 Directory.GetCurrentDirectory(),
                 "storage")));
-        services.AddScoped<IRepositoryAnalysisRepository,
-        RepositoryAnalysisRepository>();
+        services.AddScoped<IRepositoryAnalysisRepository, RepositoryAnalysisRepository>();
 
-            services.AddScoped<IRepositoryAnalysisWriter,
-                RepositoryAnalysisWriter>();
-
+        services.AddScoped<IRepositoryAnalysisWriter, RepositoryAnalysisWriter>();
+        services.AddScoped<IRepositoryAnalysisReader, RepositoryAnalysisReader>();
 
         return services;
     }

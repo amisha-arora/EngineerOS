@@ -10,9 +10,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using EngineerOS.Application.Features.Repositories.GetFiles;
-namespace EngineerOS.Api.Controllers;
-
+using EngineerOS.Application.Features.Repositories.GetStructure;
+using EngineerOS.Application.Features.Repositories.GetDependencies;
 using System.IO;
+
+namespace EngineerOS.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/repositories")]
@@ -28,6 +30,8 @@ public sealed class RepositoriesController : ControllerBase
     private readonly GetRepositoryCSharpMethodsService _getRepositoryCSharpMethodsService;
     private readonly GetRepositoryCSharpDependenciesService _getRepositoryCSharpDependenciesService;
     private readonly AnalyzeRepositoryService _analyzeRepositoryService;
+    private readonly GetRepositoryStructureService _getRepositoryStructureService;
+    private readonly GetRepositoryDependenciesService _getRepositoryDependenciesService;
 
 
     public RepositoriesController(
@@ -39,7 +43,9 @@ public sealed class RepositoriesController : ControllerBase
         GetRepositoryCSharpTypesService getRepositoryCSharpTypesService,
         GetRepositoryCSharpMethodsService getRepositoryCSharpMethodsService,
         GetRepositoryCSharpDependenciesService getRepositoryCSharpDependenciesService,
-        AnalyzeRepositoryService analyzeRepositoryService
+        AnalyzeRepositoryService analyzeRepositoryService,
+        GetRepositoryStructureService getRepositoryStructureService,
+        GetRepositoryDependenciesService getRepositoryDependenciesService
         )
     {
         _createRepositoryService = createRepositoryService;
@@ -51,6 +57,8 @@ public sealed class RepositoriesController : ControllerBase
         _getRepositoryCSharpMethodsService = getRepositoryCSharpMethodsService;
         _getRepositoryCSharpDependenciesService =getRepositoryCSharpDependenciesService;
         _analyzeRepositoryService = analyzeRepositoryService;
+        _getRepositoryStructureService = getRepositoryStructureService;
+        _getRepositoryDependenciesService =getRepositoryDependenciesService;
     }
 
     [HttpPost]
@@ -183,6 +191,40 @@ public sealed class RepositoriesController : ControllerBase
     CancellationToken cancellationToken)
     {
         var response = await _getRepositoryCSharpDependenciesService.GetAsync(
+            repositoryId,
+            cancellationToken);
+
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet("{repositoryId:guid}/structure")]
+    public async Task<IActionResult> GetStructure(
+    Guid repositoryId,
+    CancellationToken cancellationToken)
+    {
+        var response = await _getRepositoryStructureService.GetAsync(
+            repositoryId,
+            cancellationToken);
+
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet("{repositoryId:guid}/dependencies")]
+    public async Task<IActionResult> GetDependencies(
+    Guid repositoryId,
+    CancellationToken cancellationToken)
+    {
+        var response = await _getRepositoryDependenciesService.GetAsync(
             repositoryId,
             cancellationToken);
 

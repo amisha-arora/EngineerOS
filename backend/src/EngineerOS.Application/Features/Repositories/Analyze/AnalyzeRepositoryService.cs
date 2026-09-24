@@ -27,6 +27,7 @@ public sealed class AnalyzeRepositoryService
         ICSharpMethodExtractor cSharpMethodExtractor,
         ICSharpDependencyExtractor cSharpDependencyExtractor)
     {
+        // assigning is done here because the constructor parameters are being passed in and we want to store them in the private fields for later use in the class methods.
         _repositoryRepository = repositoryRepository;
         _repositoryAnalysisRepository = repositoryAnalysisRepository;
         _repositoryAnalysisWriter = repositoryAnalysisWriter;
