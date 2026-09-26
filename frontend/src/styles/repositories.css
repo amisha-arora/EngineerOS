@@ -561,3 +561,190 @@
             width: 100%;
         }
 }
+.repository-header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.analysis-empty-state {
+    margin-top: 24px;
+}
+
+.repository-analysis-workspace {
+    display: grid;
+    grid-template-columns: minmax(250px, 32%) 1fr;
+    min-height: 560px;
+    margin-top: 24px;
+    overflow: hidden;
+    background: #0d141c;
+    border: 1px solid #293845;
+    border-radius: 14px;
+}
+
+.repository-explorer {
+    min-width: 0;
+    padding: 20px;
+    overflow-y: auto;
+    background: #101a24;
+    border-right: 1px solid #293845;
+}
+
+    .repository-explorer h2 {
+        margin: 0 0 16px;
+        color: #f8fafc;
+        font-size: 1rem;
+    }
+
+.repository-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.repository-file-button {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 5px;
+    padding: 11px 12px;
+    color: #dce8f5;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+
+    .repository-file-button:hover {
+        background: #172735;
+        border-color: #2a4d63;
+    }
+
+    .repository-file-button.selected {
+        background: #123444;
+        border-color: #16bdd5;
+    }
+
+    .repository-file-button span {
+        overflow: hidden;
+        color: #ffffff;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .repository-file-button small {
+        overflow: hidden;
+        color: #8fa5b9;
+        font-size: 0.75rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+.analysis-panel {
+    min-width: 0;
+    padding: 28px;
+    overflow-y: auto;
+    color: #e8f0f7;
+}
+
+    .analysis-panel h2,
+    .analysis-panel h3,
+    .analysis-panel h4 {
+        color: #ffffff;
+    }
+
+.analysis-file-path {
+    margin: 0 0 14px;
+    color: #84a9c2;
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}
+
+.analysis-type-card {
+    padding: 18px;
+    margin: 16px 0;
+    background: #111d27;
+    border: 1px solid #304757;
+    border-radius: 10px;
+}
+
+    .analysis-type-card h3 {
+        margin-top: 0;
+    }
+
+    .analysis-type-card p,
+    .analysis-type-card li {
+        color: #c4d5e2;
+    }
+
+.analysis-dependencies {
+    padding-left: 20px;
+    margin-bottom: 0;
+    line-height: 1.8;
+}
+
+@media (max-width: 900px) {
+    .repository-analysis-workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .repository-explorer {
+        max-height: 280px;
+        border-right: 0;
+        border-bottom: 1px solid #293845;
+    }
+
+    .repository-header-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+.repository-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+    .repository-tree .repository-tree {
+        padding-left: 16px;
+        margin-top: 4px;
+    }
+
+.repository-tree-folder summary {
+    padding: 7px 8px;
+    color: #c7d8e5;
+    cursor: pointer;
+    border-radius: 6px;
+    user-select: none;
+}
+
+    .repository-tree-folder summary:hover {
+        background: #172735;
+    }
+
+    .repository-tree-folder summary::marker {
+        color: #78a8c8;
+    }
+
+.repository-tree-file {
+    min-width: 0;
+}
+
+.repository-file-button {
+    align-items: center;
+    display: flex;
+    min-width: 0;
+    padding: 8px 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

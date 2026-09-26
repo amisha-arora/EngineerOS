@@ -5,18 +5,13 @@ type HeaderProps = {
     onMenuClick?: () => void;
 };
 
-export default function Header({
-    onMenuClick,
-}: HeaderProps) {
+export default function Header({ onMenuClick }: HeaderProps) {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogout = async () => {
+    const handleLogout = async (): Promise<void> => {
         await logout();
-
-        navigate("/login", {
-            replace: true,
-        });
+        navigate("/login", { replace: true });
     };
 
     return (
@@ -31,22 +26,16 @@ export default function Header({
                     ☰
                 </button>
 
-                <h2 className="header-title">
-                    EngineerOS
-                </h2>
+                <h2 className="header-title">EngineerOS</h2>
             </div>
 
             <div className="header-user">
                 <div className="user-details">
-                    <div className="user-details">
                     <span className="user-name">
-                        {user?.firstName}{" "}
-                        {user?.lastName}
+                        {user?.firstName} {user?.lastName}
                     </span>
 
-                    <span className="user-email">
-                        {user?.email}
-                    </span>
+                    <span className="user-email">{user?.email}</span>
                 </div>
 
                 <button

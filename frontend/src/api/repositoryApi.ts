@@ -4,6 +4,9 @@ import { apiRequest } from "./apiClient";
 import type {
     RepositoryDetails,
     RepositoryListItem,
+    AnalyzeRepositoryResponse,
+    RepositoryDependencies,
+    RepositoryStructure,
 } from "../types/repository";
 
 export type CreateRepositoryRequest = {
@@ -42,6 +45,42 @@ export function createRepository(
             method: "POST",
             authenticated: true,
             body: JSON.stringify(request),
+        }
+    );
+}
+
+export function analyzeRepository(
+    repositoryId: string
+) {
+    return apiRequest<AnalyzeRepositoryResponse>(
+        `/api/v1/repositories/${repositoryId}/analyze`,
+        {
+            method: "POST",
+            authenticated: true,
+        }
+    );
+}
+
+export function getRepositoryStructure(
+    repositoryId: string
+) {
+    return apiRequest<RepositoryStructure>(
+        `/api/v1/repositories/${repositoryId}/structure`,
+        {
+            method: "GET",
+            authenticated: true,
+        }
+    );
+}
+
+export function getRepositoryDependencies(
+    repositoryId: string
+) {
+    return apiRequest<RepositoryDependencies>(
+        `/api/v1/repositories/${repositoryId}/dependencies`,
+        {
+            method: "GET",
+            authenticated: true,
         }
     );
 }
