@@ -1,6 +1,16 @@
 
-using EngineerOS.Application.Abstractions.Storage;
-
+using EngineerOS.Application.Abstractions.RepositoryFiles;
+using EngineerOS.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using EngineerOS.Application.Abstractions.RepositoryFiles;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 namespace EngineerOS.Infrastructure.FileStorage.Repositories;
 
 public sealed class LocalRepositoryFileReader : IRepositoryFileReader
@@ -12,7 +22,7 @@ public sealed class LocalRepositoryFileReader : IRepositoryFileReader
         _storageRoot = storageRoot;
     }
 
-    public Task<IReadOnlyList<RepositoryFile>> GetFilesAsync(
+    public Task<IReadOnlyList<EngineerOS.Domain.Entities.RepositoryFile>> GetFilesAsync(
         Guid repositoryId,
         CancellationToken cancellationToken)
     {
@@ -24,10 +34,10 @@ public sealed class LocalRepositoryFileReader : IRepositoryFileReader
 
         if (!Directory.Exists(extractedDirectory))
         {
-            return Task.FromResult<IReadOnlyList<RepositoryFile>>([]);
+            return Task.FromResult<IReadOnlyList<EngineerOS.Domain.Entities.RepositoryFile>>(Array.Empty<EngineerOS.Domain.Entities.RepositoryFile>());
         }
 
-        var files = new List<RepositoryFile>();
+        var files = new List<EngineerOS.Domain.Entities.RepositoryFile>();
 
         foreach (var fullPath in Directory.EnumerateFiles(
                      extractedDirectory,
@@ -50,7 +60,8 @@ public sealed class LocalRepositoryFileReader : IRepositoryFileReader
 
             var size = new FileInfo(fullPath).Length;
 
-            files.Add(new RepositoryFile(
+            files.Add(new EngineerOS.Domain.Entities.RepositoryFile(
+                repositoryId,
                 name,
                 path,
                 extension,
@@ -62,7 +73,7 @@ public sealed class LocalRepositoryFileReader : IRepositoryFileReader
         files.Sort((left, right) =>
             StringComparer.Ordinal.Compare(left.Path, right.Path));
 
-        return Task.FromResult<IReadOnlyList<RepositoryFile>>(files);
+        return Task.FromResult<IReadOnlyList<EngineerOS.Domain.Entities.RepositoryFile>>(files);
     }
 
     private static string GetFileType(string extension)

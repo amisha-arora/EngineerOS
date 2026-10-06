@@ -8,8 +8,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
-using EngineerOS.Application.Abstractions.Storage;
-using EngineerOS.Infrastructure.Storage;
+using EngineerOS.Application.Abstractions.RepositoryFiles;
+using EngineerOS.Infrastructure.FileStorage;
+using EngineerOS.Application.Abstractions.Knowledge;
+using EngineerOS.Application.Features.Repositories.Knowledge;
+using EngineerOS.Infrastructure.Knowledge;
+using Pgvector.EntityFrameworkCore;
+using EngineerOS.Infrastructure.Knowledge.Voyage;
 namespace EngineerOS.Infrastructure;
 
 public static class DependencyInjection
@@ -24,7 +29,11 @@ public static class DependencyInjection
                 "Database connection string was not found.");
 
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(
+                connectionString,
+                npgsqlOptions =>
+                    npgsqlOptions.UseVector()));
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
@@ -32,13 +41,70 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
         services.AddScoped<IRepositoryRepository, RepositoryRepository>();
-        services.AddScoped<IRepositoryStorage>(_ => new LocalRepositoryStorage(
+        services.AddScoped<IRepositoryFileStorage>(_ => new LocalRepositoryStorage(
             Path.Combine(Directory.GetCurrentDirectory(), "storage")));
 
         services.AddScoped<IRepositoryAnalysisRepository, RepositoryAnalysisRepository>();
         services.AddScoped<IRepositoryAnalysisWriter, RepositoryAnalysisWriter>();
         services.AddScoped<IRepositoryAnalysisReader, RepositoryAnalysisReader>();
+        services.AddScoped<IDocumentationDetector, DocumentationDetector>();
+        services.AddScoped<IDocumentationDiscoveryService,DocumentationDiscoveryService>();
+        services.AddScoped<IContentExtractor, PlainTextContentExtractor>();
+        services.AddScoped<IContentExtractor, PdfContentExtractor>();
+        services.AddScoped<IContentExtractor, DocxContentExtractor>();
+        services.AddScoped<IContentExtractorResolver, ContentExtractorResolver>();
+        services.AddScoped<
+        IRepositoryContentExtractionService>(
+        provider =>
+            new RepositoryContentExtractionService(
+                provider.GetRequiredService<IRepositoryFileReader>(),
+                provider.GetRequiredService<IContentExtractorResolver>(),
+                Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "storage")));
+        services.AddScoped<
+            IFileImportanceAnalyzer,
+            FileImportanceAnalyzer>();
 
+        services.AddScoped<
+            IRepositoryKnowledgeService,
+            RepositoryKnowledgeService>();
+        services.AddScoped<
+            IDocumentChunker,
+            DocumentChunker>();
+
+        services.AddScoped<
+            IDocumentChunkingService,
+            DocumentChunkingService>();
+
+        services.AddScoped<
+            IFileKnowledgePreparationService,
+            FileKnowledgePreparationService>();
+
+        services.AddScoped<
+            ICodeChunkPreparationService>(
+            provider =>
+                new CodeChunkPreparationService(
+                    provider.GetRequiredService<ApplicationDbContext>(),
+                    Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "storage")));
+        // Voyage configuration
+        services.Configure<VoyageOptions>(
+            configuration.GetSection(
+                VoyageOptions.SectionName));
+
+        // Voyage embedding provider
+        services.AddHttpClient<IEmbeddingProvider, VoyageEmbeddingProvider>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.voyageai.com/");
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
+
+        services.AddScoped<IEmbeddingService, EmbeddingService>();
+        services.AddScoped<
+            IRepositoryKnowledgeIndexingService,
+            RepositoryKnowledgeIndexingService>();
         return services;
     }
 }

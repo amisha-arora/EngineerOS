@@ -1,6 +1,6 @@
 using EngineerOS.Application.Abstractions.Authentication;
 using EngineerOS.Application.Abstractions.Persistence;
-using EngineerOS.Application.Abstractions.Storage;
+using EngineerOS.Application.Abstractions.RepositoryFiles;
 
 namespace EngineerOS.Application.Features.Repositories.GetFiles;
 

@@ -1,17 +1,25 @@
 using EngineerOS.Application;
 using EngineerOS.Infrastructure;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+
+using System;
+using System.IO;
 using System.Text;
+
 using EngineerOS.Api.Middleware;
 using EngineerOS.Api.Services;
+
 using EngineerOS.Application.Features.Repositories.GetFiles;
 using EngineerOS.Application.Abstractions.Authentication;
-using Microsoft.OpenApi;
 using EngineerOS.Application.Abstractions.Extraction;
-using EngineerOS.Application.Abstractions.Storage;
+using EngineerOS.Application.Abstractions.RepositoryFiles;
+
 using EngineerOS.Infrastructure.Extraction;
-using EngineerOS.Infrastructure.Storage;
+using EngineerOS.Infrastructure.FileStorage;
+using EngineerOS.Infrastructure.FileStorage.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -119,7 +127,7 @@ var storageRoot =
         builder.Environment.ContentRootPath,
         "storage");
 
-builder.Services.AddScoped<IRepositoryStorage>(
+builder.Services.AddScoped<IRepositoryFileStorage>(
     _ => new LocalRepositoryStorage(storageRoot));
 
 builder.Services.AddScoped<IRepositoryExtractor>(
@@ -128,7 +136,7 @@ builder.Services.AddScoped<IRepositoryExtractor>(
 builder.Services.AddScoped<ICSharpTypeExtractor>(
     _ => new CSharpTypeExtractor(storageRoot));
 
-builder.Services.AddScoped<IRepositoryFileReader>(
+builder.Services.AddScoped<EngineerOS.Application.Abstractions.RepositoryFiles.IRepositoryFileReader>(
     _ => new EngineerOS.Infrastructure.FileStorage.Repositories.LocalRepositoryFileReader(storageRoot));
 
 builder.Services.AddScoped<ICSharpMethodExtractor>(
@@ -138,6 +146,9 @@ builder.Services.AddScoped<ICSharpDependencyExtractor>(
     _ => new CSharpDependencyExtractor(storageRoot));
 
 builder.Services.AddScoped<GetRepositoryFilesService>();
+
+builder.Services.AddScoped<IRepositoryFileReader>(
+    _ => new LocalRepositoryFileReader(storageRoot));
 
 var app = builder.Build();
 

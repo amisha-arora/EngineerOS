@@ -1,7 +1,8 @@
+
 using EngineerOS.Application.Abstractions.Authentication;
 using EngineerOS.Application.Abstractions.Extraction;
 using EngineerOS.Application.Abstractions.Persistence;
-using EngineerOS.Application.Abstractions.Storage;
+using EngineerOS.Application.Abstractions.RepositoryFiles;
 using EngineerOS.Domain.Entities;
 
 namespace EngineerOS.Application.Features.Repositories.Analyze;
@@ -27,7 +28,6 @@ public sealed class AnalyzeRepositoryService
         ICSharpMethodExtractor cSharpMethodExtractor,
         ICSharpDependencyExtractor cSharpDependencyExtractor)
     {
-        // assigning is done here because the constructor parameters are being passed in and we want to store them in the private fields for later use in the class methods.
         _repositoryRepository = repositoryRepository;
         _repositoryAnalysisRepository = repositoryAnalysisRepository;
         _repositoryAnalysisWriter = repositoryAnalysisWriter;
@@ -69,25 +69,101 @@ public sealed class AnalyzeRepositoryService
                 repositoryId,
                 cancellationToken);
 
-            var types = await _cSharpTypeExtractor.ExtractAsync(
+            var extractedTypes = await _cSharpTypeExtractor.ExtractAsync(
                 repositoryId,
                 cancellationToken);
 
-            var methods = await _cSharpMethodExtractor.ExtractAsync(
+            var extractedMethods = await _cSharpMethodExtractor.ExtractAsync(
                 repositoryId,
                 cancellationToken);
 
-            var dependencies =
+            var extractedDependencies =
                 await _cSharpDependencyExtractor.ExtractAsync(
                     repositoryId,
                     cancellationToken);
 
+            var codeClasses = extractedTypes
+                .Select(type =>
+                {
+                    var file = files.FirstOrDefault(
+                        file => string.Equals(
+                            file.Path,
+                            type.File,
+                            StringComparison.OrdinalIgnoreCase));
+
+                    if (file is null)
+                    {
+                        throw new InvalidOperationException(
+                            $"Repository file '{type.File}' was not found.");
+                    }
+
+                    return new CodeClass(
+                        file.Id,
+                        type.Name,
+                        type.Namespace,
+                        type.Kind,
+                        type.Visibility,
+                        type.Modifier);
+                })
+                .ToList();
+
+            var codeMethods = extractedMethods
+                .Select(method =>
+                {
+                    var codeClass = codeClasses.FirstOrDefault(
+                        type => string.Equals(
+                            type.Name,
+                            method.ContainingType,
+                            StringComparison.Ordinal));
+
+                    if (codeClass is null)
+                    {
+                        throw new InvalidOperationException(
+                            $"Containing type '{method.ContainingType}' " +
+                            $"was not found for method '{method.Name}'.");
+                    }
+
+                    return new CodeMethod(
+                        codeClass.Id,
+                        method.Name,
+                        method.ReturnType,
+                        method.Visibility,
+                        method.LineNumber);
+                })
+                .ToList();
+
+            var codeDependencies = extractedDependencies
+                .Select(dependency =>
+                {
+                    var sourceClass = codeClasses.FirstOrDefault(
+                        type => string.Equals(
+                            type.Name,
+                            dependency.SourceType,
+                            StringComparison.Ordinal));
+
+                    var targetClass = codeClasses.FirstOrDefault(
+                        type => string.Equals(
+                            type.Name,
+                            dependency.TargetType,
+                            StringComparison.Ordinal));
+
+                    return new CodeDependency(
+                        repositoryId,
+                        sourceClass?.Id,
+                        dependency.SourceType,
+                        targetClass?.Id,
+                        dependency.TargetType,
+                        dependency.Relationship,
+                        dependency.LineNumber);
+                })
+                .ToList();
+
             await _repositoryAnalysisWriter.ReplaceMetadataAsync(
                 repositoryId,
                 files,
-                types,
-                methods,
-                dependencies,
+                codeClasses,
+                codeMethods,
+                codeDependencies,
                 cancellationToken);
 
             analysis.MarkCompleted();
@@ -99,9 +175,9 @@ public sealed class AnalyzeRepositoryService
                 analysis.Id,
                 analysis.Status,
                 files.Count,
-                types.Count,
-                methods.Count,
-                dependencies.Count);
+                codeClasses.Count,
+                codeMethods.Count,
+                codeDependencies.Count);
         }
         catch
         {

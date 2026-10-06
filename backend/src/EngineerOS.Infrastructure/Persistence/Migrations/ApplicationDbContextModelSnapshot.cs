@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Pgvector;
 
 #nullable disable
 
@@ -21,6 +22,57 @@ namespace EngineerOS.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("EngineerOS.Domain.Entities.CodeChunk", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ChunkIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("CodeClassId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CodeMethodId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentHash")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int>("EndLine")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("RepositoryFileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RepositoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("StartLine")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SymbolName")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("SymbolType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodeClassId");
+
+                    b.HasIndex("CodeMethodId");
+
+                    b.HasIndex("RepositoryFileId", "ChunkIndex")
+                        .IsUnique();
+
+                    b.ToTable("CodeChunks");
+                });
 
             modelBuilder.Entity("EngineerOS.Domain.Entities.CodeClass", b =>
                 {
@@ -168,6 +220,148 @@ namespace EngineerOS.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("code_method_parameters", (string)null);
+                });
+
+            modelBuilder.Entity("EngineerOS.Domain.Entities.Document", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RelativePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RepositoryId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RepositoryId", "RelativePath")
+                        .IsUnique();
+
+                    b.ToTable("Documents");
+                });
+
+            modelBuilder.Entity("EngineerOS.Domain.Entities.DocumentChunk", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ChunkIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Section")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DocumentChunks");
+                });
+
+            modelBuilder.Entity("EngineerOS.Domain.Entities.Embedding", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CodeChunkId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Dimensions")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("DocumentChunkId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Vector>("Vector")
+                        .IsRequired()
+                        .HasColumnType("vector");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodeChunkId");
+
+                    b.HasIndex("DocumentChunkId");
+
+                    b.ToTable("Embeddings");
+                });
+
+            modelBuilder.Entity("EngineerOS.Domain.Entities.FileKnowledge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ArchitecturalRole")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ImportanceScore")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsImportant")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Purpose")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("RepositoryFileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RepositoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RepositoryFileId")
+                        .IsUnique();
+
+                    b.ToTable("FileKnowledge");
                 });
 
             modelBuilder.Entity("EngineerOS.Domain.Entities.RefreshToken", b =>
@@ -342,6 +536,15 @@ namespace EngineerOS.Infrastructure.Persistence.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("EngineerOS.Domain.Entities.CodeChunk", b =>
+                {
+                    b.HasOne("EngineerOS.Domain.Entities.RepositoryFile", null)
+                        .WithMany()
+                        .HasForeignKey("RepositoryFileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EngineerOS.Domain.Entities.CodeClass", b =>
                 {
                     b.HasOne("EngineerOS.Domain.Entities.RepositoryFile", null)
@@ -384,6 +587,28 @@ namespace EngineerOS.Infrastructure.Persistence.Migrations
                     b.HasOne("EngineerOS.Domain.Entities.CodeMethod", null)
                         .WithMany()
                         .HasForeignKey("CodeMethodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EngineerOS.Domain.Entities.Embedding", b =>
+                {
+                    b.HasOne("EngineerOS.Domain.Entities.CodeChunk", null)
+                        .WithMany()
+                        .HasForeignKey("CodeChunkId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("EngineerOS.Domain.Entities.DocumentChunk", null)
+                        .WithMany()
+                        .HasForeignKey("DocumentChunkId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("EngineerOS.Domain.Entities.FileKnowledge", b =>
+                {
+                    b.HasOne("EngineerOS.Domain.Entities.RepositoryFile", null)
+                        .WithMany()
+                        .HasForeignKey("RepositoryFileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

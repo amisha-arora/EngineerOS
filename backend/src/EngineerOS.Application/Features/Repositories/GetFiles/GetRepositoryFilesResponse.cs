@@ -1,4 +1,4 @@
-using EngineerOS.Application.Abstractions.Storage;
+using EngineerOS.Domain.Entities;
 
 namespace EngineerOS.Application.Features.Repositories.GetFiles;
 

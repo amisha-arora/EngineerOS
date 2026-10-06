@@ -15,6 +15,7 @@ using EngineerOS.Application.Features.Repositories.GetCSharpDependencies;
 using EngineerOS.Application.Features.Repositories.Analyze;
 using EngineerOS.Application.Features.Repositories.GetStructure;
 using EngineerOS.Application.Features.Repositories.GetDependencies;
+using EngineerOS.Application.Abstractions.RepositoryFiles;
 
 namespace EngineerOS.Application;
 

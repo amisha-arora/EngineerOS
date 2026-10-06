@@ -1,9 +1,10 @@
-using EngineerOS.Application.Abstractions.Storage;
 
-namespace EngineerOS.Infrastructure.Storage;
+using EngineerOS.Application.Abstractions.RepositoryFiles;
+
+namespace EngineerOS.Infrastructure.FileStorage;
 
 public sealed class LocalRepositoryStorage
-    : IRepositoryStorage
+    : IRepositoryFileStorage
 {
     private readonly string _storageRoot;
 
@@ -13,7 +14,7 @@ public sealed class LocalRepositoryStorage
         _storageRoot = storageRoot;
     }
 
-    public async Task<string> SaveAsync(
+    public async Task SaveAsync(
         Guid repositoryId,
         Stream fileStream,
         string fileName,
@@ -43,7 +44,6 @@ public sealed class LocalRepositoryStorage
         await fileStream.CopyToAsync(
             outputStream,
             cancellationToken);
-
-        return filePath;
     }
 }
+

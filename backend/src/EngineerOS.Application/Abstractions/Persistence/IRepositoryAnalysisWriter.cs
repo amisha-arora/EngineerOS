@@ -1,6 +1,4 @@
-using EngineerOS.Application.Abstractions.Extraction;
-using EngineerOS.Application.Abstractions.Storage;
-
+using EngineerOS.Domain.Entities;
 namespace EngineerOS.Application.Abstractions.Persistence;
 
 public interface IRepositoryAnalysisWriter
@@ -8,8 +6,9 @@ public interface IRepositoryAnalysisWriter
     Task ReplaceMetadataAsync(
         Guid repositoryId,
         IReadOnlyList<RepositoryFile> files,
-        IReadOnlyList<CSharpType> types,
-        IReadOnlyList<CSharpMethod> methods,
-        IReadOnlyList<CSharpDependency> dependencies,
+        IReadOnlyList<CodeClass> types,
+        IReadOnlyList<CodeMethod> methods,
+        IReadOnlyList<CodeDependency> dependencies,
         CancellationToken cancellationToken);
 }
+

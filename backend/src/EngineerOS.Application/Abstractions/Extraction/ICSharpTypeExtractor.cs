@@ -1,5 +1,5 @@
+using EngineerOS.Domain.Entities;
 namespace EngineerOS.Application.Abstractions.Extraction;
-
 public interface ICSharpTypeExtractor
 {
     Task<IReadOnlyList<CSharpType>> ExtractAsync(

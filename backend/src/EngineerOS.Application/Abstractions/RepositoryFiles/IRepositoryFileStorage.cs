@@ -1,8 +1,8 @@
-namespace EngineerOS.Application.Abstractions.Storage;
+namespace EngineerOS.Application.Abstractions.RepositoryFiles;
 
-public interface IRepositoryStorage
+public interface IRepositoryFileStorage
 {
-    Task<string> SaveAsync(
+    Task SaveAsync(
         Guid repositoryId,
         Stream fileStream,
         string fileName,

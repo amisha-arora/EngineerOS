@@ -13,7 +13,8 @@ using EngineerOS.Application.Features.Repositories.GetFiles;
 using EngineerOS.Application.Features.Repositories.GetStructure;
 using EngineerOS.Application.Features.Repositories.GetDependencies;
 using System.IO;
-
+using EngineerOS.Application.Abstractions.Knowledge;
+using EngineerOS.Application.Features.Repositories.Knowledge;
 namespace EngineerOS.Api.Controllers;
 
 [ApiController]
@@ -32,6 +33,7 @@ public sealed class RepositoriesController : ControllerBase
     private readonly AnalyzeRepositoryService _analyzeRepositoryService;
     private readonly GetRepositoryStructureService _getRepositoryStructureService;
     private readonly GetRepositoryDependenciesService _getRepositoryDependenciesService;
+    private readonly IDocumentationDiscoveryService _documentationDiscoveryService;
 
 
     public RepositoriesController(
@@ -45,7 +47,8 @@ public sealed class RepositoriesController : ControllerBase
         GetRepositoryCSharpDependenciesService getRepositoryCSharpDependenciesService,
         AnalyzeRepositoryService analyzeRepositoryService,
         GetRepositoryStructureService getRepositoryStructureService,
-        GetRepositoryDependenciesService getRepositoryDependenciesService
+        GetRepositoryDependenciesService getRepositoryDependenciesService,
+        IDocumentationDiscoveryService documentationDiscoveryService
         )
     {
         _createRepositoryService = createRepositoryService;
@@ -59,6 +62,7 @@ public sealed class RepositoriesController : ControllerBase
         _analyzeRepositoryService = analyzeRepositoryService;
         _getRepositoryStructureService = getRepositoryStructureService;
         _getRepositoryDependenciesService =getRepositoryDependenciesService;
+        _documentationDiscoveryService = documentationDiscoveryService;
     }
 
     [HttpPost]
@@ -92,6 +96,19 @@ public sealed class RepositoriesController : ControllerBase
                 error = exception.Message
             });
         }
+    }
+
+    [HttpPost("{repositoryId:guid}/knowledge/index")]
+    public async Task<IActionResult> IndexKnowledge(
+    Guid repositoryId,
+    [FromServices] IRepositoryKnowledgeIndexingService indexingService,
+    CancellationToken cancellationToken)
+    {
+        var result = await indexingService.IndexAsync(
+            repositoryId,
+            cancellationToken);
+
+        return Ok(result);
     }
 
     [HttpPost("{repositoryId:guid}/analyze")]

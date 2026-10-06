@@ -1,7 +1,7 @@
 using EngineerOS.Application.Abstractions.Authentication;
 using EngineerOS.Application.Abstractions.Extraction;
 using EngineerOS.Application.Abstractions.Persistence;
-using EngineerOS.Application.Abstractions.Storage;
+using EngineerOS.Application.Abstractions.RepositoryFiles;
 using EngineerOS.Domain.Entities;
 
 namespace EngineerOS.Application.Features.Repositories.Create;
@@ -10,18 +10,18 @@ public sealed class CreateRepositoryService
 {
     private readonly IRepositoryRepository _repositoryRepository;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IRepositoryStorage _repositoryStorage;
+    private readonly IRepositoryFileStorage _repositoryFileStorage;
     private readonly IRepositoryExtractor _repositoryExtractor;
 
     public CreateRepositoryService(
         IRepositoryRepository repositoryRepository,
         ICurrentUserService currentUserService,
-        IRepositoryStorage repositoryStorage,
+        IRepositoryFileStorage repositoryFileStorage,
         IRepositoryExtractor repositoryExtractor)
     {
         _repositoryRepository = repositoryRepository;
         _currentUserService = currentUserService;
-        _repositoryStorage = repositoryStorage;
+        _repositoryFileStorage = repositoryFileStorage;
         _repositoryExtractor = repositoryExtractor;
     }
 
@@ -35,9 +35,9 @@ public sealed class CreateRepositoryService
             request.Url.Trim());
 
         await _repositoryRepository.AddAsync(repository, cancellationToken);
-        await _repositoryRepository.SaveChangesAsync(cancellationToken);
+         
 
-        await _repositoryStorage.SaveAsync(
+        await _repositoryFileStorage.SaveAsync(
             repository.Id,
             request.FileStream,
             request.FileName,

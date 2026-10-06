@@ -1,4 +1,6 @@
-namespace EngineerOS.Application.Abstractions.Storage;
+using EngineerOS.Domain.Entities;
+
+namespace EngineerOS.Application.Abstractions.RepositoryFiles;
 
 public interface IRepositoryFileReader
 {
