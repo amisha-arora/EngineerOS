@@ -96,6 +96,8 @@ public sealed class EmbeddingService : IEmbeddingService
                 $"Repository file for code chunk '{codeChunkId}' was not found.");
         }
 
+        // Use the persisted file path instead of trying to rediscover
+        // the RepositoryFile using a regenerated Guid.
         var fileContent =
             await _contentExtractionService.ExtractAsync(
                 file.RepositoryId,
@@ -141,9 +143,12 @@ public sealed class EmbeddingService : IEmbeddingService
         {
             try
             {
-                return await _embeddingProvider.GenerateEmbeddingAsync(
-                    content,
-                    cancellationToken);
+                // These are repository chunks being indexed,
+                // so Voyage should receive input_type = "document".
+                return await _embeddingProvider
+                    .GenerateDocumentEmbeddingAsync(
+                        content,
+                        cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -208,14 +213,18 @@ public sealed class EmbeddingService : IEmbeddingService
             .Replace("\r\n", "\n")
             .Split('\n');
 
-        var start = Math.Max(startLine - 1, 0);
+        var start = Math.Max(
+            startLine - 1,
+            0);
 
         if (start >= lines.Length)
         {
             return string.Empty;
         }
 
-        var end = Math.Min(endLine, lines.Length);
+        var end = Math.Min(
+            endLine,
+            lines.Length);
 
         return string.Join(
             Environment.NewLine,

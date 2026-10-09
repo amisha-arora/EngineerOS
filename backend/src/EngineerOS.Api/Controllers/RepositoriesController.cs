@@ -15,6 +15,8 @@ using EngineerOS.Application.Features.Repositories.GetDependencies;
 using System.IO;
 using EngineerOS.Application.Abstractions.Knowledge;
 using EngineerOS.Application.Features.Repositories.Knowledge;
+using EngineerOS.Application.Abstractions.Knowledge;
+using EngineerOS.Application.Knowledge.DTOs;
 namespace EngineerOS.Api.Controllers;
 
 [ApiController]
@@ -96,6 +98,28 @@ public sealed class RepositoriesController : ControllerBase
                 error = exception.Message
             });
         }
+    }
+
+    [HttpPost("{repositoryId:guid}/ask")]
+    public async Task<IActionResult> AskRepository(
+    Guid repositoryId,
+    [FromBody] AskRepositoryRequest request,
+    [FromServices]
+    IRepositoryQuestionAnsweringService questionAnsweringService,
+    CancellationToken cancellationToken)
+    {
+        if (request is null ||
+            string.IsNullOrWhiteSpace(request.Question))
+        {
+            return BadRequest("Question is required.");
+        }
+
+        var result = await questionAnsweringService.AskAsync(
+            repositoryId,
+            request.Question,
+            cancellationToken);
+
+        return Ok(result);
     }
 
     [HttpPost("{repositoryId:guid}/knowledge/index")]
@@ -219,6 +243,7 @@ public sealed class RepositoriesController : ControllerBase
         return Ok(response);
     }
 
+
     [HttpGet("{repositoryId:guid}/structure")]
     public async Task<IActionResult> GetStructure(
     Guid repositoryId,
@@ -251,6 +276,60 @@ public sealed class RepositoriesController : ControllerBase
         }
 
         return Ok(response);
+    }
+
+    [HttpGet("{repositoryId:guid}/knowledge/search")]
+    public async Task<IActionResult> SearchKnowledge(
+    Guid repositoryId,
+    [FromQuery] string query,
+    [FromQuery] int topK,
+    [FromServices] ISemanticSearchService semanticSearchService,
+    CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return BadRequest("Query is required.");
+        }
+
+        if (topK <= 0)
+        {
+            topK = 10;
+        }
+
+        var results = await semanticSearchService.SearchAsync(
+            repositoryId,
+            query,
+            topK,
+            cancellationToken);
+
+        return Ok(results);
+    }
+
+    [HttpGet("{repositoryId:guid}/knowledge/context")]
+    public async Task<IActionResult> GetRepositoryContext(
+    Guid repositoryId,
+    [FromQuery] string query,
+    [FromQuery] int topK,
+    [FromServices] IRepositoryContextService repositoryContextService,
+    CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return BadRequest("Query is required.");
+        }
+
+        if (topK <= 0)
+        {
+            topK = 10;
+        }
+
+        var context = await repositoryContextService.BuildAsync(
+            repositoryId,
+            query,
+            topK,
+            cancellationToken);
+
+        return Ok(context);
     }
 
     [HttpDelete("{repositoryId:guid}")]

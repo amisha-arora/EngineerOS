@@ -15,6 +15,9 @@ using EngineerOS.Application.Features.Repositories.Knowledge;
 using EngineerOS.Infrastructure.Knowledge;
 using Pgvector.EntityFrameworkCore;
 using EngineerOS.Infrastructure.Knowledge.Voyage;
+
+using EngineerOS.Application.Abstractions.AI;
+using EngineerOS.Infrastructure.AI.Gemini;
 namespace EngineerOS.Infrastructure;
 
 public static class DependencyInjection
@@ -62,6 +65,18 @@ public static class DependencyInjection
                 Path.Combine(
                     Directory.GetCurrentDirectory(),
                     "storage")));
+
+        services.Configure<GeminiOptions>(
+            configuration.GetSection(GeminiOptions.SectionName));
+
+                services.AddHttpClient<IChatProvider, GeminiChatProvider>(
+                    client =>
+                    {
+                        client.BaseAddress =
+                            new Uri("https://generativelanguage.googleapis.com/");
+
+                        client.Timeout = TimeSpan.FromSeconds(120);
+                    });
         services.AddScoped<
             IFileImportanceAnalyzer,
             FileImportanceAnalyzer>();
@@ -105,6 +120,23 @@ public static class DependencyInjection
         services.AddScoped<
             IRepositoryKnowledgeIndexingService,
             RepositoryKnowledgeIndexingService>();
+        services.AddScoped<
+            ISemanticSearchService,
+            SemanticSearchService>();
+        services.AddScoped<
+            IRepositoryContextService,
+            RepositoryContextService>();
+
+        services.AddScoped<
+            IRepositoryPromptContextBuilder,
+            RepositoryPromptContextBuilder>();
+
+        services.AddScoped<
+            IRepositoryQuestionAnsweringService,
+            RepositoryQuestionAnsweringService>();
+
+
+
         return services;
     }
 }

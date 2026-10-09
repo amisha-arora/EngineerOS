@@ -2,6 +2,8 @@ using EngineerOS.Application.Abstractions.Knowledge;
 using EngineerOS.Application.Abstractions.RepositoryFiles;
 using EngineerOS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using EngineerOS.Domain.Entities;
+
 
 namespace EngineerOS.Infrastructure.Knowledge;
 
@@ -66,32 +68,60 @@ public sealed class RepositoryKnowledgeIndexingService
                 repositoryId,
                 cancellationToken);
 
-        // 5. Extract + chunk documentation
-        foreach (var document in documents)
+        // 5. Persist, extract, and chunk documentation
+        foreach (var documentDto in documents)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            // Find the corresponding repository file.
             var repositoryFile = files.FirstOrDefault(
-                file => file.Path == document.Path);
+                file => file.Path == documentDto.Path);
 
             if (repositoryFile is null)
             {
                 continue;
             }
+
+            // Extract documentation content.
             var content =
-            await _contentExtractionService.ExtractAsync(
-                repositoryId,
-                repositoryFile.Path,
-                repositoryFile.Extension,
-                cancellationToken);
+                await _contentExtractionService.ExtractAsync(
+                    repositoryId,
+                    repositoryFile.Path,
+                    repositoryFile.Extension,
+                    cancellationToken);
 
             if (string.IsNullOrWhiteSpace(content))
             {
                 continue;
             }
 
+            // Find the existing Document entity.
+            var persistedDocument = await _dbContext
+                .Set<Document>()
+                .FirstOrDefaultAsync(
+                    d => d.RepositoryId == repositoryId &&
+                         d.RelativePath == repositoryFile.Path,
+                    cancellationToken);
+
+            // Create the Document only if it does not exist.
+            if (persistedDocument is null)
+            {
+                persistedDocument = new Document(
+                    repositoryId,
+                    repositoryFile.Name,
+                    repositoryFile.Path,
+                    repositoryFile.Extension,
+                    repositoryFile.Size);
+
+                _dbContext.Set<Document>().Add(persistedDocument);
+
+                await _dbContext.SaveChangesAsync(
+                    cancellationToken);
+            }
+
+            // Use the actual persisted Document.Id.
             await _documentChunkingService.ChunkDocumentAsync(
-                document.Id,
+                persistedDocument.Id,
                 repositoryId,
                 content,
                 cancellationToken);

@@ -19,9 +19,30 @@ public sealed class VoyageEmbeddingProvider
         _options = options.Value;
     }
 
-    public async Task<EmbeddingResult> GenerateEmbeddingAsync(
+    public Task<EmbeddingResult> GenerateDocumentEmbeddingAsync(
         string text,
         CancellationToken cancellationToken = default)
+    {
+        return GenerateEmbeddingAsync(
+            text,
+            "document",
+            cancellationToken);
+    }
+
+    public Task<EmbeddingResult> GenerateQueryEmbeddingAsync(
+        string text,
+        CancellationToken cancellationToken = default)
+    {
+        return GenerateEmbeddingAsync(
+            text,
+            "query",
+            cancellationToken);
+    }
+
+    private async Task<EmbeddingResult> GenerateEmbeddingAsync(
+        string text,
+        string inputType,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -34,7 +55,7 @@ public sealed class VoyageEmbeddingProvider
         {
             Input = text,
             Model = _options.Model,
-            InputType = "document",
+            InputType = inputType,
             OutputDimension = _options.Dimensions
         };
 
@@ -47,8 +68,7 @@ public sealed class VoyageEmbeddingProvider
                 "Bearer",
                 _options.ApiKey);
 
-        message.Content =
-            JsonContent.Create(request);
+        message.Content = JsonContent.Create(request);
 
         using var response =
             await _httpClient.SendAsync(
