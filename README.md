@@ -4,7 +4,7 @@ EngineerOS is an AI-powered onboarding and engineering workspace designed to hel
 
 The project currently includes a React + TypeScript frontend connected to a secure ASP.NET Core backend using JWT-based authentication and PostgreSQL.
 
-> **Current Status:** **Current Status:** **Phase 4 completed — Repository Knowledge Base & AI-Powered Understanding.** EngineerOS now supports full-stack authentication, repository management, static code analysis, Code Knowledge Graph generation, file importance scoring, documentation and code indexing, Voyage AI embeddings with pgvector, repository-aware semantic search, and Gemini-powered repository Q&A with structured source citations. The platform can analyze repository structure, identify dependencies, retrieve relevant code and documentation, and generate context-aware explanations to help developers understand unfamiliar codebases.**
+> **Current Status: **Phase 4 completed — Repository Knowledge Base & AI-Powered Understanding.** EngineerOS now supports full-stack authentication, repository management, static code analysis, Code Knowledge Graph generation, file importance scoring, documentation and code indexing, Voyage AI embeddings with pgvector, repository-aware semantic search, and Gemini-powered repository Q&A with structured source citations. The platform can analyze repository structure, identify dependencies, retrieve relevant code and documentation, and generate context-aware explanations to help developers understand unfamiliar codebases.**
 
 ---
 
